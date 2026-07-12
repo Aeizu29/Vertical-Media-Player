@@ -771,66 +771,128 @@
     scrollDurationInput.addEventListener("change", () => setScrollAnimationDuration(scrollDurationInput.value));
 
     const activeScrollAnimations = new WeakMap();
+    const feedScrollRunTokens = new WeakMap();
+
+    function cancelElementScrollAnimation(element) {
+      const animation = activeScrollAnimations.get(element);
+      if (!animation) return;
+      animation.cancelled = true;
+      if (animation.rafId) cancelAnimationFrame(animation.rafId);
+      activeScrollAnimations.delete(element);
+      if (typeof animation.resolve === "function") animation.resolve(false);
+    }
+
+    function resetFeedScrollState(feed, synchronizeMedia = false) {
+      if (!feed) return;
+      cancelElementScrollAnimation(feed);
+      clearTimeout(feed.__scrollAnimationWatchdog);
+      feed.__scrollAnimationWatchdog = null;
+      feed.__scrollAnimationRunning = false;
+      feed.classList.remove("mouse-dragging");
+      feed.querySelectorAll(".item[data-scroll-incoming='1']").forEach(item => {
+        delete item.dataset.scrollIncoming;
+        clearTimeout(item.__scrollIncomingSafetyTimer);
+      });
+      feed.style.scrollSnapType = feed.__stableScrollSnapType ?? "";
+      feed.style.scrollBehavior = feed.__stableScrollBehavior ?? "";
+      delete feed.__stableScrollSnapType;
+      delete feed.__stableScrollBehavior;
+      if (synchronizeMedia) {
+        if (feed === gallery) updateActiveMedia();
+        else {
+          const index = feeds.indexOf(feed);
+          if (index >= 0) updateActiveMediaForFeed(feed, index);
+        }
+      }
+    }
 
     function animateScrollPosition(element, destination, duration = scrollAnimationDuration) {
       if (!element) return Promise.resolve(false);
+      cancelElementScrollAnimation(element);
 
-      // Annule proprement l'animation précédente sur ce même lecteur.
-      const previousAnimation = activeScrollAnimations.get(element);
-      if (previousAnimation) previousAnimation.cancelled = true;
-
-      const animation = { cancelled: false };
+      const animation = { cancelled: false, rafId: 0, resolve: null };
       activeScrollAnimations.set(element, animation);
-
       const start = element.scrollTop;
       const distance = destination - start;
-      const oldScrollBehavior = element.style.scrollBehavior;
-      const oldSnapType = element.style.scrollSnapType;
 
-      // Pendant l'animation contrôlée, le smooth natif et le snap ne doivent pas
-      // ajouter leur propre durée par-dessus la valeur choisie par l'utilisateur.
       element.style.scrollBehavior = "auto";
       element.style.scrollSnapType = "none";
 
-      const restoreStyles = () => {
-        if (activeScrollAnimations.get(element) === animation) {
-          activeScrollAnimations.delete(element);
-          element.style.scrollBehavior = oldScrollBehavior;
-          element.style.scrollSnapType = oldSnapType;
-        }
-      };
-
-      if (Math.abs(distance) < 0.5 || duration <= 0) {
-        element.scrollTop = destination;
-        restoreStyles();
-        return Promise.resolve(true);
-      }
-
-      const startedAt = performance.now();
-      const easeInOutCubic = t => t < 0.5
-        ? 4 * t * t * t
-        : 1 - Math.pow(-2 * t + 2, 3) / 2;
-
       return new Promise(resolve => {
-        function frame(now) {
-          if (animation.cancelled) {
-            restoreStyles();
-            resolve(false);
-            return;
-          }
+        let settled = false;
+        const finish = completed => {
+          if (settled) return;
+          settled = true;
+          if (animation.rafId) cancelAnimationFrame(animation.rafId);
+          if (activeScrollAnimations.get(element) === animation) activeScrollAnimations.delete(element);
+          resolve(completed);
+        };
+        animation.resolve = finish;
 
+        if (Math.abs(distance) < 0.5 || duration <= 0) {
+          element.scrollTop = destination;
+          finish(true);
+          return;
+        }
+
+        const startedAt = performance.now();
+        const easeInOutCubic = t => t < 0.5
+          ? 4 * t * t * t
+          : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+        const frame = now => {
+          if (animation.cancelled) { finish(false); return; }
           const progress = Math.min(1, (now - startedAt) / duration);
           element.scrollTop = start + distance * easeInOutCubic(progress);
-
-          if (progress < 1) {
-            requestAnimationFrame(frame);
-          } else {
+          if (progress < 1) animation.rafId = requestAnimationFrame(frame);
+          else {
             element.scrollTop = destination;
-            restoreStyles();
-            resolve(true);
+            finish(true);
           }
+        };
+        animation.rafId = requestAnimationFrame(frame);
+      });
+    }
+
+    function runFeedScrollAnimation(feed, targetTop, onFinished) {
+      if (!feed) return Promise.resolve(false);
+
+      // Save the genuine resting styles only once. A replacement animation must
+      // never treat the temporary auto/none values as the layout's normal state.
+      if (!feed.__scrollAnimationRunning) {
+        feed.__stableScrollSnapType = feed.style.scrollSnapType;
+        feed.__stableScrollBehavior = feed.style.scrollBehavior;
+      }
+
+      const token = (feedScrollRunTokens.get(feed) || 0) + 1;
+      feedScrollRunTokens.set(feed, token);
+      cancelElementScrollAnimation(feed);
+      feed.__scrollAnimationRunning = true;
+
+      clearTimeout(feed.__scrollAnimationWatchdog);
+      feed.__scrollAnimationWatchdog = setTimeout(() => {
+        if (feedScrollRunTokens.get(feed) !== token) return;
+        feedScrollRunTokens.set(feed, token + 1);
+        resetFeedScrollState(feed, true);
+      }, Math.max(2200, scrollAnimationDuration + 1200));
+
+      return animateScrollPosition(feed, targetTop).then(completed => {
+        if (feedScrollRunTokens.get(feed) !== token) return false;
+        clearTimeout(feed.__scrollAnimationWatchdog);
+        feed.__scrollAnimationWatchdog = null;
+        feed.__scrollAnimationRunning = false;
+        feed.style.scrollSnapType = feed.__stableScrollSnapType ?? "";
+        feed.style.scrollBehavior = feed.__stableScrollBehavior ?? "";
+        delete feed.__stableScrollSnapType;
+        delete feed.__stableScrollBehavior;
+        if (typeof onFinished === "function") onFinished(completed);
+        return completed;
+      }).catch(() => {
+        if (feedScrollRunTokens.get(feed) === token) {
+          resetFeedScrollState(feed, true);
+          if (typeof onFinished === "function") onFinished(false);
         }
-        requestAnimationFrame(frame);
+        return false;
       });
     }
 
@@ -1003,12 +1065,27 @@
 
       const beforeRects = new Map(activeFeeds.map(activeFeed => [activeFeed, activeFeed.getBoundingClientRect()]));
       const preservedWidths = new Map(activeFeeds.map(activeFeed => [activeFeed, activeFeed.getBoundingClientRect().width]));
+
+      // Keep focus attached to the actual feed element, not to its old column index.
+      // Horizontal reordering is only a position change and must never unfocus media.
+      const focusedFeedBeforeReorder = focusedFeedIndex >= 0
+        ? activeFeeds[focusedFeedIndex] || null
+        : null;
+
       const globalOldIndex = feeds.indexOf(feed);
       feeds.splice(globalOldIndex, 1);
       feeds.splice(newIndex, 0, feed);
-      clearFocusedFeed();
       buildFeedResizers();
       applyReorderedFeedWidths(feed, preservedWidths);
+
+      if (focusedFeedBeforeReorder) {
+        const reorderedActiveFeeds = getActiveFeeds();
+        focusedFeedIndex = reorderedActiveFeeds.indexOf(focusedFeedBeforeReorder);
+        multiGallery.classList.add("focused-layout");
+        reorderedActiveFeeds.forEach(activeFeed => {
+          activeFeed.classList.toggle("focused-feed", activeFeed === focusedFeedBeforeReorder);
+        });
+      }
 
       // FLIP animation: keep every feed visually where it was, then glide it into its new slot.
       const reorderedFeeds = getActiveFeeds();
@@ -1108,7 +1185,12 @@
       feed.addEventListener("pointerdown", function (event) {
         if (event.pointerType !== "mouse" || shouldIgnoreMouseDrag(event)) return;
         if (document.body.classList.contains("ordering-feed-pick")) return;
-        if (isFeedLocked(feed)) return;
+
+        // A new physical drag is authoritative. Clear any animation/watchdog left
+        // by an interrupted wheel, auto-advance or previous pointer sequence first.
+        resetFeedScrollState(feed, false);
+        lockedItems.delete(getFeedKey(feed));
+        feed.querySelectorAll(".item.locked").forEach(item => item.classList.remove("locked"));
 
         dragging = true;
         dragAxis = "";
@@ -1173,11 +1255,10 @@
         lastTime = now;
         feed.scrollTop = startTop - totalY;
 
-        const direction = totalY < 0 ? "next" : "previous";
-        if (Math.abs(totalY) > 24 && direction !== incomingDirection) {
-          incomingDirection = direction;
-          startIncomingMediaBeforeScroll(feed, direction);
-        }
+        // Keep the grabbed media playing with its current sound for the whole drag.
+        // The incoming media is prepared only after mouse release, once navigation
+        // has actually been confirmed.
+        incomingDirection = totalY < 0 ? "next" : "previous";
         event.preventDefault();
       }, { passive: false });
 
@@ -1214,21 +1295,31 @@
           return;
         }
 
-        const totalDy = event.clientY - startY;
+        const releaseY = Number.isFinite(event.clientY) ? event.clientY : lastY;
+        const totalDy = releaseY - startY;
         const shouldMove = Math.abs(totalDy) > feed.clientHeight * 0.16 || Math.abs(velocityY) > 0.55;
         const direction = totalDy < 0 ? 1 : -1;
         const targetTop = shouldMove ? Math.max(0, startTop + direction * feed.clientHeight) : startTop;
 
+        // Do not mute/switch audio while the mouse is holding the media. Once the
+        // user releases and the move is confirmed, prepare the destination media.
+        if (shouldMove) {
+          startIncomingMediaBeforeScroll(feed, direction > 0 ? "next" : "previous");
+        }
+
         feed.style.scrollSnapType = "none";
         feed.style.scrollBehavior = "auto";
         feed.classList.remove("mouse-dragging");
-        animateScrollPosition(feed, targetTop).then(() => {
+        runFeedScrollAnimation(feed, targetTop, () => {
           feed.style.scrollSnapType = previousSnapType;
           feed.style.scrollBehavior = previousScrollBehavior;
-          if (feed === gallery) updateActiveMedia();
+          if (shouldMove) finishIncomingMediaAfterScroll(feed);
           else {
-            const index = feeds.indexOf(feed);
-            if (index >= 0) updateActiveMediaForFeed(feed, index);
+            if (feed === gallery) updateActiveMedia();
+            else {
+              const index = feeds.indexOf(feed);
+              if (index >= 0) updateActiveMediaForFeed(feed, index);
+            }
           }
         });
         dragAxis = "";
@@ -1236,10 +1327,38 @@
 
       feed.addEventListener("pointerup", finishMouseDrag);
       feed.addEventListener("pointercancel", finishMouseDrag);
+      feed.addEventListener("lostpointercapture", event => {
+        if (dragging) finishMouseDrag(event);
+      });
+      window.addEventListener("blur", () => {
+        if (dragging) {
+          dragging = false;
+          dragAxis = "";
+          feed.classList.remove("mouse-dragging", "feed-reordering");
+          document.body.classList.remove("reordering-feeds");
+          feed.style.transform = "";
+          resetFeedScrollState(feed, true);
+        }
+      });
     }
 
     enableMouseDragScroll(gallery);
     feeds.forEach(feed => enableMouseDragScroll(feed));
+
+    // Pointer capture can occasionally be lost without a usable pointerup event
+    // (window switching, browser UI, rapid multi-layout input). The first movement
+    // with no mouse button held force-restores every transient layout state.
+    window.addEventListener("pointermove", event => {
+      if (event.pointerType !== "mouse" || event.buttons !== 0) return;
+      [gallery, ...feeds].forEach(feed => {
+        if (!feed.classList.contains("mouse-dragging") && !feed.classList.contains("feed-reordering")) return;
+        feed.classList.remove("mouse-dragging", "feed-reordering", "feed-drop-animating");
+        feed.style.transform = "";
+        resetFeedScrollState(feed, true);
+      });
+      document.body.classList.remove("reordering-feeds");
+    }, { passive:true });
+
     let lockedItems = new Map();
     let lockSnapTimers = new Map();
     let folderOpenIntent = "main";
@@ -1413,7 +1532,9 @@
     }
 
     function isFeedLocked(feed) {
-      return !!getLockedItem(feed);
+      // Layout locking is disabled: it was too easy to trigger accidentally with
+      // the mouse wheel and made a healthy feed appear permanently frozen.
+      return false;
     }
 
     function scrollToLockedItem(feed) {
@@ -1459,6 +1580,8 @@
     }
 
     function scheduleLockSnap(feed) {
+      // Legacy lock snapping disabled.
+      return false;
       const lockedItem = getLockedItem(feed);
       if (!lockedItem) return false;
 
@@ -1565,7 +1688,16 @@
     }
 
     function getFileName(file) { return typeof file === "string" ? file : file.name; }
-    function getFileUrl(file) { return typeof file === "string" ? file : URL.createObjectURL(file); }
+    const objectUrlCache = new WeakMap();
+    function getFileUrl(file) {
+      if (typeof file === "string") return file;
+      let url = objectUrlCache.get(file);
+      if (!url) {
+        url = URL.createObjectURL(file);
+        objectUrlCache.set(file, url);
+      }
+      return url;
+    }
     function isVideo(name) { return name.endsWith(".mp4") || name.endsWith(".webm") || name.endsWith(".ogg"); }
     function isGif(name) { return name.endsWith(".gif"); }
     function isImageOnly(name) { return name.endsWith(".jpg") || name.endsWith(".jpeg") || name.endsWith(".png") || name.endsWith(".webp"); }
@@ -1743,28 +1875,52 @@
       // load() n'est appelé que si la source vient d'être créée par ensureVideoSource.
     }
 
-    function preloadNextMediaForFeed(feed, activeItem, count = 3) {
+    const PRELOAD_AHEAD_SINGLE = 3;
+    const PRELOAD_AHEAD_MULTI = 2;
+    const PRELOAD_BEHIND = 1;
+
+    function getPreloadAheadCount() {
+      const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+      if (connection?.saveData) return 1;
+      if (mediaMode >= 5) return 1;
+      return mediaMode > 1 ? PRELOAD_AHEAD_MULTI : PRELOAD_AHEAD_SINGLE;
+    }
+
+    function isItemInsideWarmWindow(feed, activeItem, item, ahead = getPreloadAheadCount(), behind = PRELOAD_BEHIND) {
+      if (!feed || !activeItem || !item) return false;
+      const items = Array.from(feed.querySelectorAll(".item"));
+      const activeIndex = items.indexOf(activeItem);
+      const itemIndex = items.indexOf(item);
+      return activeIndex >= 0 && itemIndex >= activeIndex - behind && itemIndex <= activeIndex + ahead;
+    }
+
+    function preloadNextMediaForFeed(feed, activeItem, count = getPreloadAheadCount(), blurredCount = getPreloadAheadCount()) {
       if (!feed || !activeItem) return;
       const items = Array.from(feed.querySelectorAll(".item"));
       const activeIndex = items.indexOf(activeItem);
       if (activeIndex < 0) return;
 
-      for (let i = Math.max(0, activeIndex - 1); i <= activeIndex + count && i < items.length; i++) {
+      // Optimized foreground preload window.
+      const lastIndex = Math.min(items.length - 1, activeIndex + Math.max(1, count));
+      for (let i = Math.max(0, activeIndex - PRELOAD_BEHIND); i <= lastIndex; i++) {
         const item = items[i];
         const foregroundVideo = item.querySelector("video:not(.media-background)");
         if (foregroundVideo) preloadVideoQuietly(foregroundVideo, item.dataset.name || "");
+      }
 
-        // Précharge aussi la copie floutée avant qu'elle n'arrive à l'écran.
-        if (blurredBackgroundEnabled && !pipEnabled) {
+      // Keep the blurred-background preload behavior unchanged from the original player.
+      if (blurredBackgroundEnabled && !pipEnabled && blurredCount > 0) {
+        const blurLastIndex = Math.min(items.length - 1, activeIndex + blurredCount);
+        for (let i = Math.max(0, activeIndex - 1); i <= blurLastIndex; i++) {
+          const item = items[i];
           const backgroundVideo = item.querySelector("video.media-background");
-          if (backgroundVideo) {
-            setupReliableVideo(backgroundVideo, item.dataset.name || "");
-            ensureVideoSource(backgroundVideo, item.dataset.name || "");
-            backgroundVideo.preload = "auto";
-            backgroundVideo.setAttribute("preload", "auto");
-            backgroundVideo.muted = true;
-            backgroundVideo.setAttribute("muted", "");
-          }
+          if (!backgroundVideo) continue;
+          setupReliableVideo(backgroundVideo, item.dataset.name || "");
+          ensureVideoSource(backgroundVideo, item.dataset.name || "");
+          backgroundVideo.preload = "auto";
+          backgroundVideo.setAttribute("preload", "auto");
+          backgroundVideo.muted = true;
+          backgroundVideo.setAttribute("muted", "");
         }
       }
     }
@@ -1921,6 +2077,8 @@
         });
       } else {
         element = document.createElement("img");
+        element.decoding = "async";
+        element.loading = "eager";
         element.src = url;
         element.alt = "";
       }
@@ -1942,11 +2100,13 @@
       nameLabel.className = "media-name";
       nameLabel.textContent = name;
 
+      // Middle-click used to silently lock one layout to this media. An accidental
+      // wheel click therefore looked exactly like a randomly stuck layout. Keep the
+      // normal browser middle-click suppressed over media, but never lock the feed.
       container.addEventListener("auxclick", function (event) {
         if (event.button !== 1) return;
         event.preventDefault();
         event.stopPropagation();
-        toggleLockItem(container);
       });
 
       container.addEventListener("mousedown", function (event) {
@@ -1992,35 +2152,12 @@
     const frozenGifState = new WeakMap();
 
     function freezeGifImage(img) {
-      if (!img || frozenGifState.has(img) || !isGif((img.closest(".item")?.dataset?.name || "").toLowerCase())) return;
-      const src = img.currentSrc || img.src;
-      if (!src) return;
-
-      const canvas = document.createElement("canvas");
-      canvas.className = img.className;
-      canvas.setAttribute("aria-hidden", "true");
-      canvas.style.cssText = img.style.cssText;
-      canvas.style.width = "100%";
-      canvas.style.height = "calc(var(--vh, 1vh) * 100)";
-      canvas.style.objectFit = "contain";
-      canvas.style.display = "block";
-      canvas.style.background = "#000";
-      const width = Math.max(1, img.naturalWidth || img.clientWidth || 1);
-      const height = Math.max(1, img.naturalHeight || img.clientHeight || 1);
-      canvas.width = width;
-      canvas.height = height;
-
-      try {
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0, width, height);
-      } catch {
-        return;
-      }
-
-      img.insertAdjacentElement("afterend", canvas);
-      frozenGifState.set(img, { src, canvas });
-      img.style.display = "none";
-      img.removeAttribute("src");
+      // Keep GIFs rendered by their original <img> element while another feed is focused.
+      // The previous canvas snapshot could be taken before the first decoded frame was ready,
+      // producing a transparent canvas that appeared as a black panel.
+      // Leaving the source intact also prevents the GIF and its blurred background from
+      // disappearing when focus mode changes the column widths.
+      return;
     }
 
     function restoreGifImage(img) {
@@ -2059,21 +2196,111 @@
       });
     }
 
+    function cancelFocusLayoutAnimation() {
+      clearTimeout(focusLayoutCleanupTimer);
+      focusLayoutCleanupTimer = null;
+
+      // Unfocus must invalidate every asynchronous operation that can still write
+      // scrollTop or temporary styles after the focus layout has been removed.
+      getActiveFeeds().forEach(feed => {
+        feedScrollRunTokens.set(feed, (feedScrollRunTokens.get(feed) || 0) + 1);
+        cancelElementScrollAnimation(feed);
+        clearTimeout(feed.__scrollAnimationWatchdog);
+        feed.__scrollAnimationWatchdog = null;
+        feed.__scrollAnimationRunning = false;
+
+        const feedIndex = feeds.indexOf(feed);
+        if (feedIndex >= 0 && feedScrollTimers[feedIndex]) {
+          clearTimeout(feedScrollTimers[feedIndex]);
+          feedScrollTimers[feedIndex] = null;
+        }
+        clearFeedAutoTimer(feed);
+
+        feed.querySelectorAll(".item[data-scroll-incoming='1']").forEach(item => {
+          delete item.dataset.scrollIncoming;
+          clearTimeout(item.__scrollIncomingSafetyTimer);
+        });
+
+        feed.style.transition = "none";
+        feed.style.transform = "none";
+        feed.style.transformOrigin = "";
+        feed.classList.remove("mouse-dragging", "feed-drop-animating", "feed-reordering");
+        feed.style.scrollBehavior = "auto";
+        feed.style.scrollSnapType = "none";
+        delete feed.__stableScrollSnapType;
+        delete feed.__stableScrollBehavior;
+      });
+      document.body.classList.remove("reordering-feeds", "resizing-feeds");
+      void multiGallery.offsetWidth;
+    }
+
+    function finishFocusLayoutReset() {
+      getActiveFeeds().forEach(feed => {
+        feed.style.transform = "";
+        feed.style.transformOrigin = "";
+        feed.style.transition = "";
+        feed.style.scrollBehavior = "";
+        feed.style.scrollSnapType = "";
+      });
+    }
+
     function clearFocusedFeed() {
       const hadFocus = focusedFeedIndex >= 0;
+      const activeFeeds = getActiveFeeds();
+
+      // Capture the currently visible focused layout before cancelling any old
+      // transform. getBoundingClientRect() includes an in-progress FLIP transform,
+      // so unfocus remains smooth even when triggered mid-animation.
+      const firstRects = hadFocus
+        ? new Map(activeFeeds.map(feed => [feed, feed.getBoundingClientRect()]))
+        : null;
+
+      cancelFocusLayoutAnimation();
       focusedFeedIndex = -1;
       multiGallery.classList.remove("focused-layout");
       feeds.forEach(feed => feed.classList.remove("focused-feed"));
 
-      // A normal manual resize/reorder often calls this while no focus mode is active.
-      // In that case, do not touch playback, mute state, volume, timers, or decoders.
-      if (!hadFocus) return;
+      if (!hadFocus) {
+        requestAnimationFrame(finishFocusLayoutReset);
+        return;
+      }
 
       updateFocusedMediaPerformance();
       applyVolumeToVideos();
 
-      // En quittant le focus, le mode Auto reprend normalement dans toutes les colonnes.
-      if (mediaMode > 1) updateAllActiveMedia();
+      // Apply equal real widths once, then visually animate from the old focused
+      // geometry with compositor-only transforms. This restores the unfocus
+      // animation without continuously resizing/re-rendering playing videos.
+      activeFeeds.forEach(feed => { feed.style.transition = "none"; });
+      setEqualFeedWidths();
+      void multiGallery.offsetWidth;
+
+      activeFeeds.forEach(feed => {
+        const first = firstRects.get(feed);
+        const last = feed.getBoundingClientRect();
+        if (!first || !last || last.width === 0) return;
+        const scaleX = first.width / last.width;
+        const translateX = first.left - last.left;
+        feed.style.transformOrigin = "left center";
+        feed.style.transform = `translateX(${translateX}px) scaleX(${scaleX})`;
+      });
+
+      void multiGallery.offsetWidth;
+      activeFeeds.forEach(feed => {
+        feed.style.transition = "transform .22s cubic-bezier(.22,.61,.36,1), opacity .16s ease, box-shadow .16s ease";
+        feed.style.transform = "";
+      });
+
+      clearTimeout(focusLayoutCleanupTimer);
+      focusLayoutCleanupTimer = setTimeout(() => {
+        finishFocusLayoutReset();
+        if (mediaMode <= 1 || focusedFeedIndex >= 0) return;
+        const settledFeeds = getActiveFeeds();
+        Promise.all(settledFeeds.map(feed => forceCenterActiveItem(feed, false))).then(() => {
+          if (focusedFeedIndex >= 0) return;
+          settledFeeds.forEach((feed, index) => updateActiveMediaForFeed(feed, index));
+        });
+      }, focusLayoutTransitionMs + 40);
     }
 
     function runSmoothGifFocusTransition(feed, applyLayout) {
@@ -2314,6 +2541,49 @@
       });
     }
 
+    function prepareFocusedFeedForManualResize() {
+      if (focusedFeedIndex < 0 || mediaMode <= 1) return false;
+
+      // Leave focus mode without running the normal unfocus animation and without
+      // resetting widths. The exact geometry currently visible becomes the real
+      // resize geometry, so the playing video is not resized twice and cannot jump.
+      clearTimeout(focusLayoutCleanupTimer);
+      focusLayoutCleanupTimer = null;
+
+      const activeFeeds = getActiveFeeds();
+      const currentWidths = new Map(activeFeeds.map(feed => [feed, feed.getBoundingClientRect().width]));
+
+      cancelFocusLayoutAnimation();
+
+      activeFeeds.forEach(feed => {
+        feed.style.transition = "none";
+        feed.style.transform = "none";
+        feed.style.transformOrigin = "";
+      });
+      void multiGallery.offsetWidth;
+
+      activeFeeds.forEach(feed => {
+        const width = currentWidths.get(feed);
+        if (Number.isFinite(width) && width > 0) {
+          feed.style.width = width + "px";
+          feed.style.flex = `0 0 ${width}px`;
+        }
+        feed.classList.remove("focused-feed");
+      });
+
+      focusedFeedIndex = -1;
+      multiGallery.classList.remove("focused-layout");
+
+      // Restore normal CSS transitions only after the frozen visible widths have
+      // been committed. No media element, currentTime, scrollTop or audio state is
+      // touched here.
+      requestAnimationFrame(() => {
+        activeFeeds.forEach(feed => { feed.style.transition = ""; });
+      });
+
+      return true;
+    }
+
     function enableFeedResizer(handle, leftFeed, rightFeed) {
       handle.addEventListener("pointerdown", function (event) {
         if (event.button !== 0 && event.pointerType === "mouse") return;
@@ -2322,7 +2592,9 @@
 
         // Width-only operation: when focus mode is not active, resizing must not
         // run any media/audio synchronization code in neighbouring feeds.
-        if (focusedFeedIndex >= 0) clearFocusedFeed();
+        const focusWasDisabledByResize = focusedFeedIndex >= 0
+          ? prepareFocusedFeedForManualResize()
+          : false;
         const startX = event.clientX;
         const leftStart = leftFeed.getBoundingClientRect().width;
         const rightStart = rightFeed.getBoundingClientRect().width;
@@ -2351,10 +2623,21 @@
           handle.classList.remove("dragging");
           document.body.classList.remove("resizing-feeds");
           try { handle.releasePointerCapture(finishEvent.pointerId); } catch {}
-          requestAnimationFrame(() => {
-            forceCenterActiveItem(leftFeed, false);
-            forceCenterActiveItem(rightFeed, false);
-          });
+          // Horizontal resizing does not change the active vertical item. Avoid
+          // recentering or writing scrollTop, because Chromium may redraw a playing
+          // frame. When this drag disabled focus, only restore normal playback for
+          // the side layouts after the pointer interaction is completely finished.
+          if (focusWasDisabledByResize) {
+            requestAnimationFrame(() => {
+              getActiveFeeds().forEach((feed, index) => {
+                if (feed === leftFeed || feed === rightFeed) {
+                  // The resized videos remain untouched; updateActiveMediaForFeed
+                  // only runs once the resize has ended and the geometry is stable.
+                }
+                updateActiveMediaForFeed(feed, index);
+              });
+            });
+          }
         };
 
         handle.addEventListener("pointermove", move, { passive:false });
@@ -2365,9 +2648,30 @@
 
     function resetManualFeedWidths() {
       if (mediaMode <= 1) return;
-      clearFocusedFeed();
+
+      // When leaving focus mode, clearFocusedFeed performs the safe animated
+      // return to equal widths and rebuilds playback only after it settles.
+      if (focusedFeedIndex >= 0) {
+        clearFocusedFeed();
+        return;
+      }
+
+      // Normal manual-width reset (outside focus mode) remains immediate.
+      cancelFocusLayoutAnimation();
       setEqualFeedWidths();
-      getActiveFeeds().forEach(feed => forceCenterActiveItem(feed, false));
+      requestAnimationFrame(() => {
+        setEqualFeedWidths();
+        finishFocusLayoutReset();
+        requestAnimationFrame(() => {
+          getActiveFeeds().forEach(feed => {
+            feed.__scrollAnimationRunning = false;
+            forceCenterActiveItem(feed, false).then(() => {
+              const index = feeds.indexOf(feed);
+              if (index >= 0) updateActiveMediaForFeed(feed, index);
+            });
+          });
+        });
+      });
     }
 
     function setMediaMode(value) {
@@ -2611,11 +2915,11 @@
         if (mediaMode > 1) {
           getActiveFeeds().forEach(feed => {
             const activeItem = getActiveItemInFeed(feed);
-            if (activeItem) preloadNextMediaForFeed(feed, activeItem, 4);
+            if (activeItem) preloadNextMediaForFeed(feed, activeItem, 4, 4);
           });
         } else {
           const activeItem = getActiveItemInFeed(gallery);
-          if (activeItem) preloadNextMediaForFeed(gallery, activeItem, 4);
+          if (activeItem) preloadNextMediaForFeed(gallery, activeItem, 4, 4);
         }
       } else if (!blurredBackgroundEnabled) {
         // Dès que le flou est désactivé, décharge immédiatement toutes les copies vidéo de fond.
@@ -2804,20 +3108,47 @@
       clearAutoNextTimer();
       const activeItem = getActiveItemInFeed(gallery);
       if (!activeItem) return;
-      preloadNextMediaForFeed(gallery, activeItem, 1);
+      preloadNextMediaForFeed(gallery, activeItem);
       gallery.querySelectorAll("video:not(.media-background)").forEach(video => {
         const isActive = activeItem.contains(video);
         const item = video.closest(".item");
         const name = item?.dataset?.name || "";
         video.loop = true;
         if (pipEnabled) { silenceVideoImmediately(video, false); return; }
-        if (isActive || item?.dataset?.scrollIncoming === "1") { tryPlayVideo(video, name); }
-        else { silenceVideoImmediately(video, true); unloadInactiveVideo(video); }
+        if (isActive || item?.dataset?.scrollIncoming === "1") {
+          tryPlayVideo(video, name);
+        } else {
+          const keepWarm = isItemInsideWarmWindow(gallery, activeItem, item);
+          silenceVideoImmediately(video, !keepWarm);
+          if (!keepWarm) unloadInactiveVideo(video);
+          else preloadVideoQuietly(video, name);
+        }
       });
       gallery.querySelectorAll("video.media-background").forEach(video => {
         const item = video.closest(".item");
-        if (item === activeItem || item?.dataset?.scrollIncoming === "1") updateBlurBackgroundForItem(item);
-        else { stopBlurVideoSync(video); video.playbackRate = 1; unloadInactiveVideo(video); }
+        if (item === activeItem || item?.dataset?.scrollIncoming === "1") {
+          updateBlurBackgroundForItem(item);
+        } else {
+          stopBlurVideoSync(video);
+          video.playbackRate = 1;
+          const keepWarm = blurredBackgroundEnabled && !pipEnabled && isItemInsideWarmWindow(
+            gallery,
+            activeItem,
+            item,
+            getPreloadAheadCount(),
+            PRELOAD_BEHIND
+          );
+          if (keepWarm) {
+            setupReliableVideo(video, item?.dataset?.name || "");
+            ensureVideoSource(video, item?.dataset?.name || "");
+            video.preload = "auto";
+            video.setAttribute("preload", "auto");
+            video.muted = true;
+            video.setAttribute("muted", "");
+          } else {
+            unloadInactiveVideo(video);
+          }
+        }
       });
       if (pipEnabled) { updateDocumentPip(); return; }
       if (!autoNextEnabled || isFeedLocked(gallery)) return;
@@ -2827,7 +3158,7 @@
     function updateActiveMediaForFeed(feed, index) {
       const activeItem = getActiveItemInFeed(feed);
       if (!activeItem) return;
-      preloadNextMediaForFeed(feed, activeItem, 1);
+      preloadNextMediaForFeed(feed, activeItem);
       const actualIndex = feeds.indexOf(feed);
       clearFeedAutoTimer(feed);
 
@@ -2846,8 +3177,14 @@
           return;
         }
 
-        if (isActive || item?.dataset?.scrollIncoming === "1") { tryPlayVideo(video, name); }
-        else { silenceVideoImmediately(video, true); unloadInactiveVideo(video); }
+        if (isActive || item?.dataset?.scrollIncoming === "1") {
+          tryPlayVideo(video, name);
+        } else {
+          const keepWarm = isItemInsideWarmWindow(feed, activeItem, item);
+          silenceVideoImmediately(video, !keepWarm);
+          if (!keepWarm) unloadInactiveVideo(video);
+          else preloadVideoQuietly(video, name);
+        }
       });
 
       feed.querySelectorAll("video.media-background").forEach(video => {
@@ -2858,8 +3195,29 @@
           preserveBlurBackgroundFrame(item);
           return;
         }
-        if (item === activeItem || item?.dataset?.scrollIncoming === "1") updateBlurBackgroundForItem(item);
-        else { stopBlurVideoSync(video); video.playbackRate = 1; unloadInactiveVideo(video); }
+        if (item === activeItem || item?.dataset?.scrollIncoming === "1") {
+          updateBlurBackgroundForItem(item);
+        } else {
+          stopBlurVideoSync(video);
+          video.playbackRate = 1;
+          const keepWarm = blurredBackgroundEnabled && !pipEnabled && isItemInsideWarmWindow(
+            feed,
+            activeItem,
+            item,
+            getPreloadAheadCount(),
+            PRELOAD_BEHIND
+          );
+          if (keepWarm) {
+            setupReliableVideo(video, item?.dataset?.name || "");
+            ensureVideoSource(video, item?.dataset?.name || "");
+            video.preload = "auto";
+            video.setAttribute("preload", "auto");
+            video.muted = true;
+            video.setAttribute("muted", "");
+          } else {
+            unloadInactiveVideo(video);
+          }
+        }
       });
 
       // Refige immédiatement tout nouveau GIF apparu après un changement automatique.
@@ -2890,9 +3248,22 @@
       if (!activeMedia) return null;
       const name = activeItem.dataset.name || "";
       const tag = activeMedia.tagName.toLowerCase();
-      if (tag === "img") return setTimeout(callback, isGif(name) ? getGifDurationMs() : getImageDurationMs());
-      if (tag === "video") return setTimeout(callback, getVideoDurationMs());
-      return null;
+      const fullDuration = tag === "img"
+        ? (isGif(name) ? getGifDurationMs() : getImageDurationMs())
+        : tag === "video"
+          ? getVideoDurationMs()
+          : 0;
+      if (!fullDuration) return null;
+
+      // The configured duration starts when the transition toward this item starts,
+      // not after the scroll animation has finished. This keeps “3 sec” close to
+      // three real seconds even with a long transition animation.
+      const startedAt = Number(activeItem.dataset.autoAdvanceStartedAt) || performance.now();
+      if (!activeItem.dataset.autoAdvanceStartedAt) {
+        activeItem.dataset.autoAdvanceStartedAt = String(startedAt);
+      }
+      const elapsed = Math.max(0, performance.now() - startedAt);
+      return setTimeout(callback, Math.max(0, fullDuration - elapsed));
     }
 
     const blurSyncFrames = new WeakMap();
@@ -2969,12 +3340,18 @@
         const activeItem = getActiveItemInFeed(feed);
         if (!activeItem) return;
         updateBlurBackgroundForItem(activeItem);
-        preloadNextMediaForFeed(feed, activeItem, 1);
+        preloadNextMediaForFeed(feed, activeItem);
       });
     }
 
     gallery.addEventListener("scroll", function () {
       if (mediaMode > 1) return;
+      // During a mouse grab, the visible position may cross the halfway point.
+      // Never recalculate the active media here: doing so mutes the grabbed video.
+      if (gallery.classList.contains("mouse-dragging") || gallery.__scrollAnimationRunning) {
+        clearTimeout(scrollTimer);
+        return;
+      }
       updateBlurDuringScroll(gallery);
       if (scheduleLockSnap(gallery)) return;
 
@@ -2982,21 +3359,34 @@
       if (nearBottom && filteredFiles.length > 0) addMoreItemsToFeed(gallery, 5);
       clearTimeout(scrollTimer);
       scrollTimer = setTimeout(() => {
-        forceCenterActiveItem(gallery, false).then(updateActiveMedia);
+        if (gallery.classList.contains("mouse-dragging")) return;
+        forceCenterActiveItem(gallery, false).then(centered => {
+          if (!centered || gallery.classList.contains("mouse-dragging")) return;
+          updateActiveMedia();
+        });
       }, 120);
     });
 
     feeds.forEach((feed, index) => {
       feed.addEventListener("scroll", function () {
         if (mediaMode <= 1 || index >= mediaMode) return;
+        // Keep the grabbed video's decoder, mute state and volume untouched until
+        // pointerup. Crossing the midpoint during drag must not switch active media.
+        if (feed.classList.contains("mouse-dragging") || feed.__scrollAnimationRunning) {
+          if (feedScrollTimers[index]) clearTimeout(feedScrollTimers[index]);
+          return;
+        }
         updateBlurDuringScroll(feed);
         if (scheduleLockSnap(feed)) return;
 
         const nearBottom = feed.scrollTop + feed.clientHeight >= feed.scrollHeight - window.innerHeight * 3;
-        if (nearBottom && filteredFiles.length > 0) addMoreItemsToFeed(feed, 5);
+        const feedLibrary = feedFilteredLibraries.get(feed) || filteredFiles;
+        if (nearBottom && feedLibrary.length > 0) addMoreItemsToFeed(feed, 5);
         if (feedScrollTimers[index]) clearTimeout(feedScrollTimers[index]);
         feedScrollTimers[index] = setTimeout(() => {
-          forceCenterActiveItem(feed, false).then(() => {
+          if (feed.classList.contains("mouse-dragging")) return;
+          forceCenterActiveItem(feed, false).then(centered => {
+            if (!centered || feed.classList.contains("mouse-dragging")) return;
             const currentIndex = feeds.indexOf(feed);
             if (currentIndex >= 0) updateActiveMediaForFeed(feed, currentIndex);
           });
@@ -3037,6 +3427,11 @@
       const targetItem = items[targetIndex];
       if (!targetItem) return;
 
+      // Start the next item's Auto timer at the beginning of the transition.
+      // Any previous visit must not carry an old timestamp into this new visit.
+      targetItem.dataset.autoAdvanceStartedAt = String(performance.now());
+      if (current && current !== targetItem) delete current.dataset.autoAdvanceStartedAt;
+
       // La vidéo cible démarre dès le début du mouvement, sans attendre que
       // le scroll soit terminé ou que la slide devienne officiellement active.
       const targetVideo = targetItem.querySelector("video:not(.media-background)");
@@ -3069,17 +3464,69 @@
           fadeOutThen(targetVideo, () => { try { targetVideo.pause(); } catch {} });
         } else {
           tryPlayVideo(targetVideo, targetItem.dataset.name || "");
+
+          // The next video must become audible as soon as the scroll animation starts.
+          // Do not wait for the active-item recalculation at the end of the movement.
+          const openIncomingAudioNow = () => {
+            if (targetItem.dataset.scrollIncoming !== "1") return;
+            if (!soundEnabled || volume <= 0 || shouldMuteForegroundVideo(targetVideo)) return;
+            cancelAudioFade(targetVideo);
+            targetVideo.volume = volume;
+            targetVideo.muted = false;
+            targetVideo.removeAttribute("muted");
+          };
+          openIncomingAudioNow();
+          targetVideo.addEventListener("playing", openIncomingAudioNow, { once:true });
+          queueMicrotask(openIncomingAudioNow);
+
           if (blurredBackgroundEnabled && !pipEnabled) updateBlurBackgroundForItem(targetItem);
         }
 
-        setTimeout(() => {
-          if (targetItem.dataset.scrollIncoming === "1") {
+        // Safety cleanup only. Normal cleanup happens when the scroll promise ends,
+        // so long animations never lose their incoming/audio state halfway through.
+        clearTimeout(targetItem.__scrollIncomingSafetyTimer);
+        targetItem.__scrollIncomingSafetyTimer = setTimeout(() => {
+          if (targetItem.dataset.scrollIncoming === "1" && !feed.__scrollAnimationRunning) {
             delete targetItem.dataset.scrollIncoming;
             if (feedIndex >= 0) updateActiveMediaForFeed(feed, feedIndex);
             else if (feed === gallery) updateActiveMedia();
           }
-        }, 900);
+        }, Math.max(2500, scrollAnimationDuration + 1000));
       }
+    }
+
+    function finishIncomingMediaAfterScroll(feed) {
+      if (!feed) return;
+      feed.__scrollAnimationRunning = false;
+      feed.querySelectorAll(".item[data-scroll-incoming='1']").forEach(item => {
+        delete item.dataset.scrollIncoming;
+        clearTimeout(item.__scrollIncomingSafetyTimer);
+      });
+      if (feed === gallery) updateActiveMedia();
+      else {
+        const index = feeds.indexOf(feed);
+        if (index >= 0) updateActiveMediaForFeed(feed, index);
+      }
+    }
+
+    function ensureNextItemsAvailable(feed, current, minimumAhead = 4) {
+      if (!feed || !current) return;
+      let items = Array.from(feed.querySelectorAll(".item"));
+      let index = items.indexOf(current);
+      if (index < 0) return;
+
+      // Programmatic scrolls suppress the normal scroll handler, so its near-bottom
+      // refill cannot run. Refill here before choosing the next target; otherwise a
+      // feed that reaches its last preloaded item behaves as if its library ended.
+      const availableAhead = items.length - index - 1;
+      if (availableAhead >= minimumAhead) return;
+
+      const library = feed === gallery
+        ? filteredFiles
+        : (feedFilteredLibraries.get(feed) || filteredFiles);
+      if (!library || library.length === 0) return;
+
+      addMoreItemsToFeed(feed, Math.max(5, minimumAhead - availableAhead + 2));
     }
 
     function scrollToNextItem(feed) {
@@ -3088,14 +3535,19 @@
         return;
       }
 
-      const items = Array.from(feed.querySelectorAll(".item"));
       const current = getActiveItemInFeed(feed);
+      if (!current) return;
+      ensureNextItemsAvailable(feed, current);
+      const items = Array.from(feed.querySelectorAll(".item"));
       const index = items.indexOf(current);
-      const target = items[Math.min(items.length - 1, index + 1)];
+      const target = items[index + 1];
       if (!target) return;
 
+      preloadNextMediaForFeed(feed, current, getPreloadAheadCount(), getPreloadAheadCount());
+      const targetVideo = target.querySelector("video:not(.media-background)");
+      if (targetVideo) preloadVideoQuietly(targetVideo, target.dataset.name || "");
       startIncomingMediaBeforeScroll(feed, "next");
-      animateScrollPosition(feed, getItemSnapTop(feed, target));
+      runFeedScrollAnimation(feed, getItemSnapTop(feed, target), () => finishIncomingMediaAfterScroll(feed));
     }
 
     function scrollToPreviousItem(feed) {
@@ -3110,8 +3562,20 @@
       const target = items[Math.max(0, index - 1)];
       if (!target) return;
 
+      preloadNextMediaForFeed(feed, current, getPreloadAheadCount(), getPreloadAheadCount());
+      const targetVideo = target.querySelector("video:not(.media-background)");
+      if (targetVideo) preloadVideoQuietly(targetVideo, target.dataset.name || "");
+      const targetBackgroundVideo = target.querySelector("video.media-background");
+      if (targetBackgroundVideo && blurredBackgroundEnabled && !pipEnabled) {
+        setupReliableVideo(targetBackgroundVideo, target.dataset.name || "");
+        ensureVideoSource(targetBackgroundVideo, target.dataset.name || "");
+        targetBackgroundVideo.preload = "auto";
+        targetBackgroundVideo.setAttribute("preload", "auto");
+        targetBackgroundVideo.muted = true;
+        targetBackgroundVideo.setAttribute("muted", "");
+      }
       startIncomingMediaBeforeScroll(feed, "previous");
-      animateScrollPosition(feed, getItemSnapTop(feed, target));
+      runFeedScrollAnimation(feed, getItemSnapTop(feed, target), () => finishIncomingMediaAfterScroll(feed));
     }
 
     async function toggleDocumentPip() {
