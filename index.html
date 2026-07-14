@@ -767,8 +767,8 @@
     .item.locked .media-lock-button {
       background:linear-gradient(180deg, rgba(255,255,255,.28), rgba(255,255,255,.13));
       color:#fff;
-      /* Locked state: white icon and white button border. */
-      border-color:#fff;
+      /* Locked state: thin white outline around the whole button. */
+      border:1px solid rgba(255,255,255,.95) !important;
       box-shadow:0 12px 32px rgba(0,0,0,.34), 0 0 0 1px rgba(255,255,255,.10), inset 0 1px 0 rgba(255,255,255,.42);
     }
     /* Focus/unfocus resize performance optimization — same timing and width animation,
@@ -1514,6 +1514,16 @@
     pointer-events:auto;
     transform:translateY(0) scale(1);
     transition-delay:0s;
+  }
+  /* After an option is selected, keep the dropdown closed until the pointer leaves the + control. */
+  .add-layout-menu.dropdown-dismissed .add-layout-dropdown,
+  .add-layout-menu.dropdown-dismissed:hover .add-layout-dropdown,
+  .add-layout-menu.dropdown-dismissed:focus-within .add-layout-dropdown {
+    opacity:0 !important;
+    visibility:hidden !important;
+    pointer-events:none !important;
+    transform:translateY(-5px) scale(.98) !important;
+    transition-delay:0s !important;
   }
   .add-layout-choice {
     width:100%;
@@ -2340,12 +2350,251 @@ body.animations-disabled .feed { scroll-behavior:auto !important; }
   }
 </style>
 
+
+<style id="startup-folder-screen">
+  #startupScreen {
+    position:fixed;
+    inset:0;
+    z-index:2147483600;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:28px;
+    padding:32px;
+    background:#000;
+    text-align:center;
+  }
+  #startupScreen.hidden { display:none; }
+  #startupTitle {
+    margin:0;
+    color:#3478ff;
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Arial,sans-serif;
+    font-size:clamp(34px,6vw,86px);
+    font-weight:900;
+    line-height:.95;
+    letter-spacing:-.045em;
+    text-transform:uppercase;
+    text-shadow:0 0 34px rgba(52,120,255,.28);
+  }
+
+  #startupFeatures {
+    width:min(1080px,92vw);
+    margin:-4px 0 2px;
+    color:#c7cfdd;
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Arial,sans-serif;
+    font-size:clamp(13px,1.2vw,17px);
+    line-height:1.55;
+  }
+  #startupFeaturesIntro {
+    margin:0 auto 14px;
+    max-width:900px;
+    color:#eef3ff;
+    font-weight:700;
+  }
+  #startupFeatureList {
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:8px 10px;
+    margin:0;
+    padding:0;
+    list-style:none;
+  }
+  #startupFeatureList li {
+    padding:7px 11px;
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:999px;
+    background:rgba(255,255,255,.055);
+    color:#b9c3d3;
+    white-space:nowrap;
+  }
+  #startupOpenFolder {
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:min(760px,86vw);
+    min-height:clamp(110px,18vh,190px);
+    padding:28px 46px;
+    border:2px solid #fff;
+    border-radius:26px;
+    background:#fff;
+    color:#050505;
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Arial,sans-serif;
+    font-size:clamp(32px,5vw,72px);
+    font-weight:900;
+    line-height:1;
+    letter-spacing:-.035em;
+    cursor:pointer;
+    box-shadow:0 24px 70px rgba(255,255,255,.16);
+    transition:transform .18s ease, box-shadow .18s ease, background .18s ease;
+    user-select:none;
+  }
+  #startupOpenFolder:hover {
+    transform:translateY(-4px) scale(1.012);
+    background:#f2f2f2;
+    box-shadow:0 30px 90px rgba(255,255,255,.24);
+  }
+  #startupOpenFolder:active { transform:translateY(0) scale(.99); }
+  body:not(.folder-loaded) #hoverZone { display:none !important; }
+  @media (max-width:700px) {
+    #startupScreen { gap:18px; padding:22px; overflow:auto; }
+    #startupFeatureList { gap:6px; }
+    #startupFeatureList li { white-space:normal; }
+    #startupOpenFolder { width:92vw; border-radius:20px; }
+  }
+</style>
+
+<style id="global-efficient-glass-control">
+  :root {
+    --ui-glass-bg: rgba(28,32,42,.86);
+    --ui-glass-bg-hover: rgba(40,46,60,.94);
+    --ui-glass-bg-soft: rgba(255,255,255,.055);
+    --ui-glass-border: rgba(255,255,255,.24);
+    --ui-glass-highlight: rgba(255,255,255,.19);
+    --ui-glass-shadow: rgba(0,0,0,.34);
+    --ui-glass-sheen: rgba(255,255,255,.10);
+    --ui-primary-alpha: .94;
+  }
+
+  /* Lightweight acrylic glass: layered gradients and shadows, no backdrop blur. */
+  #hoverZone,
+  .media-lock-button, .layout-close-button, .layout-speed-button,
+  .layout-order-button, .layout-filter-button, .layout-folder-button,
+  .layout-add-button, .add-layout-button, .floating-control-button,
+  .media-fps-counter, #gallery::before, .feed::before {
+    background:
+      linear-gradient(145deg, var(--ui-glass-sheen), transparent 42%),
+      var(--ui-glass-bg) !important;
+    border-color: var(--ui-glass-border) !important;
+    box-shadow: 0 8px 22px var(--ui-glass-shadow),
+                inset 0 1px 0 var(--ui-glass-highlight),
+                inset 0 -1px 0 rgba(0,0,0,.18) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  #hoverZone:hover,
+  .media-lock-button:hover, .layout-close-button:hover, .layout-speed-button:hover,
+  .layout-order-button:hover, .layout-filter-button:hover, .layout-folder-button:hover,
+  .layout-add-button:hover, .add-layout-button:hover, .floating-control-button:hover {
+    background:
+      linear-gradient(145deg, var(--ui-glass-highlight), transparent 46%),
+      var(--ui-glass-bg-hover) !important;
+    border-color: var(--ui-glass-highlight) !important;
+  }
+
+  /* Settings surfaces use opaque compositing-friendly acrylic layers. */
+  #leftControls.toolbar-shell, .settings-zone, .settings-zone .control-group,
+  .settings-zone button, .settings-zone select, .settings-zone .file-button,
+  .settings-zone input[type=number], .settings-zone input[type=color],
+  .settings-zone .playback-volume, .settings-zone .appearance-value {
+    border-color: var(--ui-glass-border) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  #leftControls.toolbar-shell, .settings-zone, .settings-zone .control-group {
+    background:
+      linear-gradient(150deg, var(--ui-glass-sheen), transparent 34%),
+      rgba(13,16,23,.96) !important;
+  }
+
+  .settings-zone button, .settings-zone select, .settings-zone .file-button,
+  .settings-zone input[type=number], .settings-zone input[type=color],
+  .settings-zone .playback-volume, .settings-zone .appearance-value {
+    background:
+      linear-gradient(145deg, var(--ui-glass-sheen), transparent 48%),
+      var(--ui-glass-bg-soft) !important;
+    box-shadow: inset 0 1px 0 var(--ui-glass-highlight),
+                inset 0 -1px 0 rgba(0,0,0,.12) !important;
+  }
+
+  .settings-zone button:hover, .settings-zone select:hover, .settings-zone .file-button:hover {
+    background:
+      linear-gradient(145deg, var(--ui-glass-highlight), transparent 48%),
+      var(--ui-glass-bg-hover) !important;
+  }
+
+  .settings-zone .primary-action, .settings-zone #openFolderBtn, .settings-zone #pipBtn {
+    background: rgba(255,255,255,var(--ui-primary-alpha, .94)) !important;
+    color:#11151d !important;
+  }
+</style>
+
+
+<style id="final-efficient-glass-no-blur-fix">
+  /* Final UI performance override: remove every remaining iOS-style backdrop blur. */
+  #topBar, #topBar *, #topBar *::before, #topBar *::after,
+  #leftControls, #leftControls *, #leftControls *::before, #leftControls *::after,
+  .add-layout-menu, .add-layout-menu *, .add-layout-menu *::before, .add-layout-menu *::after,
+  .add-layout-side-button, .add-layout-side-button::before, .add-layout-side-button::after,
+  .add-layout-dropdown, .add-layout-dropdown *, .add-layout-dropdown *::before, .add-layout-dropdown *::after,
+  .add-layout-choice, .add-layout-choice::before, .add-layout-choice::after,
+  .media-lock-button, .media-lock-button::before, .media-lock-button::after,
+  .layout-close-button, .layout-close-button::before, .layout-close-button::after,
+  .layout-speed-button, .layout-speed-button::before, .layout-speed-button::after,
+  .layout-order-button, .layout-filter-button, .layout-folder-button,
+  .floating-control-button {
+    backdrop-filter:none !important;
+    -webkit-backdrop-filter:none !important;
+  }
+
+  /* Lightweight acrylic replacement for the + controls and their dropdown. */
+  .add-layout-side-button {
+    background:linear-gradient(145deg, rgba(255,255,255,.10), transparent 48%), rgba(28,32,42,.92) !important;
+    border-color:rgba(255,255,255,.22) !important;
+    box-shadow:0 7px 18px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.17) !important;
+  }
+  .add-layout-side-button:hover {
+    background:linear-gradient(145deg, rgba(255,255,255,.16), transparent 50%), rgba(42,48,61,.97) !important;
+  }
+  .add-layout-dropdown {
+    background:linear-gradient(150deg, rgba(255,255,255,.07), transparent 38%), rgba(17,20,27,.98) !important;
+    border-color:rgba(255,255,255,.16) !important;
+    box-shadow:0 14px 34px rgba(0,0,0,.48), inset 0 1px 0 rgba(255,255,255,.09) !important;
+  }
+  .add-layout-choice {
+    background:rgba(255,255,255,.055) !important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.07) !important;
+  }
+  .add-layout-choice:hover { background:rgba(255,255,255,.105) !important; }
+
+  /* Keep the settings menu fully opaque enough to avoid expensive live compositing. */
+  #leftControls.toolbar-shell {
+    background:linear-gradient(150deg, rgba(255,255,255,.045), transparent 34%), rgba(10,12,17,.985) !important;
+  }
+</style>
+
 </head>
 <body class="no-visible-layouts hide-media-names show-blurred-background">
+<div id="startupScreen">
+  <h1 id="startupTitle">VERTICAL MEDIA PLAYER</h1>
+  <div id="startupFeatures">
+    <p id="startupFeaturesIntro">Browse images, GIFs and videos from any folder in a smooth vertical feed.</p>
+    <ul id="startupFeatureList">
+      <li>Single or multi-column layouts</li>
+      <li>Drag, resize and reorder feeds</li>
+      <li>Images, GIFs and video playback</li>
+      <li>Auto-scroll with custom timing</li>
+      <li>Loop, mute and volume controls</li>
+      <li>Picture-in-Picture mode</li>
+      <li>Blurred backgrounds and custom colors</li>
+      <li>Rounded layouts and media corners</li>
+      <li>Folder names, media details and FPS display</li>
+      <li>Latest, oldest and media-type filters</li>
+      <li>Per-media locking and layout focus</li>
+      <li>Keyboard, mouse, touch and drag navigation</li>
+    </ul>
+  </div>
+  <label id="startupOpenFolder" for="folderInput">Open Folder</label>
+</div>
+
 <div id="hoverZone" role="button" tabindex="0" aria-label="Open menu" aria-expanded="false"><span class="open-menu-label">OPEN MENU</span></div>
 <div id="addLayoutLeftMenu" class="add-layout-menu">
   <button id="addLayoutLeftBtn" class="add-layout-side-button" type="button" aria-label="Add a layout on the left" aria-haspopup="menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg></button>
   <div class="add-layout-dropdown" role="menu" aria-label="Add left layout order">
+    <button class="add-layout-choice scan-folder-choice" type="button" data-side="left" data-action="scan-folder" role="menuitem">Scan new folder<small>Choose another media folder</small></button>
     <button class="add-layout-choice" type="button" data-side="left" data-order="latest" role="menuitem">Latest<small>Newest media first</small></button>
     <button class="add-layout-choice" type="button" data-side="left" data-order="oldest" role="menuitem">Oldest<small>Oldest media first</small></button>
     <div class="add-layout-divider" aria-hidden="true"></div>
@@ -2357,6 +2606,7 @@ body.animations-disabled .feed { scroll-behavior:auto !important; }
 <div id="addLayoutRightMenu" class="add-layout-menu">
   <button id="addLayoutRightBtn" class="add-layout-side-button" type="button" aria-label="Add a layout on the right" aria-haspopup="menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg></button>
   <div class="add-layout-dropdown" role="menu" aria-label="Add right layout order">
+    <button class="add-layout-choice scan-folder-choice" type="button" data-side="right" data-action="scan-folder" role="menuitem">Scan new folder<small>Choose another media folder</small></button>
     <button class="add-layout-choice" type="button" data-side="right" data-order="latest" role="menuitem">Latest<small>Newest media first</small></button>
     <button class="add-layout-choice" type="button" data-side="right" data-order="oldest" role="menuitem">Oldest<small>Oldest media first</small></button>
     <div class="add-layout-divider" aria-hidden="true"></div>
@@ -2543,6 +2793,8 @@ body.animations-disabled .feed { scroll-behavior:auto !important; }
     const folderNameBtn = document.getElementById("folderNameBtn");
     const fpsCounterBtn = document.getElementById("fpsCounterBtn");
     const glassResizeBtn = document.getElementById("glassResizeBtn");
+    const glassIntensitySlider = document.getElementById("glassIntensitySlider");
+    const glassIntensityText = document.getElementById("glassIntensityText");
     const resolutionInfoBtn = document.getElementById("resolutionInfoBtn");
     const sizeInfoBtn = document.getElementById("sizeInfoBtn");
     const dateInfoBtn = document.getElementById("dateInfoBtn");
@@ -2592,6 +2844,7 @@ body.animations-disabled .feed { scroll-behavior:auto !important; }
     let layoutCornerRadius = 0;
     let mediaCornerRadius = 0;
     let backgroundBlurStrength = 28;
+    let glassIntensity = 55;
     let layoutGap = 0;
     let customBackgroundColor = "#000000";
     const isMobileSafariLike = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && /Macintosh/i.test(navigator.userAgent));
@@ -2613,6 +2866,47 @@ body.animations-disabled .feed { scroll-behavior:auto !important; }
     let pipDragPreview = null;
     let pipLastWheelTime = 0;
     const pipWheelCooldownMin = 80;
+
+
+
+
+    function clampGlassIntensity(value) {
+      return Math.max(0, Math.min(100, Number(value) || 0));
+    }
+
+    function applyGlassVariablesToRoot(root) {
+      if (!root) return;
+      const t = glassIntensity / 100;
+      const soft = (0.025 + t * 0.115).toFixed(3);
+      const normal = (0.62 + t * 0.30).toFixed(3);
+      const hover = (0.76 + t * 0.20).toFixed(3);
+      const border = (0.08 + t * 0.32).toFixed(3);
+      const highlight = (0.08 + t * 0.30).toFixed(3);
+      const shadow = (0.16 + t * 0.28).toFixed(3);
+      const sheen = (0.025 + t * 0.16).toFixed(3);
+      const primary = (0.78 + t * 0.22).toFixed(3);
+      root.style.setProperty('--ui-glass-bg-soft', `rgba(255,255,255,${soft})`);
+      root.style.setProperty('--ui-glass-bg', `rgba(28,32,42,${normal})`);
+      root.style.setProperty('--ui-glass-bg-hover', `rgba(40,46,60,${hover})`);
+      root.style.setProperty('--ui-glass-border', `rgba(255,255,255,${border})`);
+      root.style.setProperty('--ui-glass-highlight', `rgba(255,255,255,${highlight})`);
+      root.style.setProperty('--ui-glass-shadow', `rgba(0,0,0,${shadow})`);
+      root.style.setProperty('--ui-glass-sheen', `rgba(255,255,255,${sheen})`);
+      root.style.setProperty('--ui-primary-alpha', primary);
+    }
+
+    function setGlassIntensity(value, save = true) {
+      glassIntensity = clampGlassIntensity(value);
+      if (glassIntensitySlider) glassIntensitySlider.value = String(glassIntensity);
+      if (glassIntensityText) glassIntensityText.textContent = `${glassIntensity}%`;
+      applyGlassVariablesToRoot(document.documentElement);
+      if (pipWindow && !pipWindow.closed) applyGlassVariablesToRoot(pipWindow.document.documentElement);
+      if (save) { try { localStorage.setItem('gallery_glass_intensity_v1', String(glassIntensity)); } catch {} }
+    }
+
+    glassIntensitySlider?.addEventListener('input', () => setGlassIntensity(glassIntensitySlider.value));
+    try { setGlassIntensity(localStorage.getItem('gallery_glass_intensity_v1') ?? 55, false); }
+    catch { setGlassIntensity(55, false); }
 
 
     function applyAnimationsSetting() {
@@ -3575,6 +3869,7 @@ body.animations-disabled .feed { scroll-behavior:auto !important; }
     let lockedItems = new Map();
     let lockSnapTimers = new Map();
     let folderOpenIntent = "main";
+    let pendingScanFolderSide = "right";
 
     openFolderBtn.addEventListener("click", () => { folderOpenIntent = "main"; });
     openNewFolderBtn.addEventListener("click", () => { folderOpenIntent = "new"; });
@@ -3583,20 +3878,19 @@ body.animations-disabled .feed { scroll-behavior:auto !important; }
       const selectedFiles = Array.from(folderInput.files).filter(file => validExtensions.some(ext => file.name.toLowerCase().endsWith(ext)));
       folderInput.value = "";
       if (selectedFiles.length === 0) { info.textContent = "No compatible media found"; return; }
+      document.body.classList.add("folder-loaded");
+      const startupScreen = document.getElementById("startupScreen");
+      if (startupScreen) startupScreen.classList.add("hidden");
       const firstPath = selectedFiles[0]?.webkitRelativePath || selectedFiles[0]?.name || "Folder";
       const folderName = firstPath.split("/")[0] || "Folder";
       lastOpenedFolderFiles = [...selectedFiles];
       lastOpenedFolderName = folderName;
 
-      if (mediaMode > 1 && folderOpenIntent === "new") {
-        pendingFolderFiles = selectedFiles;
-        pendingFolderName = folderName;
-        pendingOrderingMode = "none";
-        document.body.classList.remove("ordering-feed-pick");
-        document.body.classList.add("folder-feed-pick");
-        refreshOrderingButtons();
-        info.textContent = `Click a layout to open ${folderName} (${selectedFiles.length} files)`;
+      if (folderOpenIntent === "new") {
+        const side = pendingScanFolderSide === "left" ? "left" : "right";
         folderOpenIntent = "main";
+        addLayoutAtSide(side, "random", "", selectedFiles, folderName);
+        info.textContent = `${folderName} added as a new layout (${selectedFiles.length} files)`;
         return;
       }
 
@@ -4279,7 +4573,11 @@ body.animations-disabled .feed { scroll-behavior:auto !important; }
           return getFileName(a).localeCompare(getFileName(b), undefined, { numeric: true, sensitivity: "base" }) * direction;
         });
       }
-      if (filteredFiles.length === 0) { clearAllFeeds(); updateAddLayoutButtons(); info.textContent = "Aucun fichier pour ce filtre"; return false; }
+      if (filteredFiles.length === 0) {
+        // Safety net: an empty filter must not erase the layouts currently on screen.
+        info.textContent = "Aucun fichier pour ce filtre — médias actuels conservés";
+        return false;
+      }
       info.textContent = filteredFiles.length + " files displayed";
       return true;
     }
@@ -4528,6 +4826,21 @@ body.animations-disabled .feed { scroll-behavior:auto !important; }
         const nextMode = filterCycle[(filterCycle.indexOf(currentMode) + 1) % filterCycle.length];
 
         if (mediaMode <= 1) {
+          const sourceLibrary = files;
+          let nextLibrary;
+          if (nextMode === "images") nextLibrary = sourceLibrary.filter(file => isImageOnly(getFileName(file).toLowerCase()));
+          else if (nextMode === "gifs") nextLibrary = sourceLibrary.filter(file => isGif(getFileName(file).toLowerCase()));
+          else if (nextMode === "videos") nextLibrary = sourceLibrary.filter(file => isVideo(getFileName(file).toLowerCase()));
+          else if (nextMode === "motion") nextLibrary = sourceLibrary.filter(file => isMotion(getFileName(file).toLowerCase()));
+          else nextLibrary = [...sourceLibrary];
+
+          // Never clear the only visible layout when the requested filter is empty.
+          // Keep the current media and current filter instead.
+          if (!nextLibrary.length) {
+            info.textContent = `No files available for ${filterLabels[nextMode]}`;
+            return;
+          }
+
           filterMode.value = nextMode;
           filterMode.dispatchEvent(new Event("change", { bubbles:true }));
           return;
@@ -4653,7 +4966,15 @@ body.animations-disabled .feed { scroll-behavior:auto !important; }
     function addMoreItemsToFeed(feed, count = 5) { for (let i = 0; i < count; i++) addItemToFeed(feed); }
     function getActiveFeeds() { return feeds.slice(0, mediaMode); }
     function syncSingleLayoutControls() {
-      document.body.classList.toggle("single-layout-mode", mediaMode <= 1);
+      const isSingleLayout = mediaMode <= 1;
+      document.body.classList.toggle("single-layout-mode", isSingleLayout);
+      // "Scan new folder" is available even with one visible layout. Selecting it
+      // creates a second layout and fills that new layout with the chosen folder.
+      document.querySelectorAll(".scan-folder-choice").forEach(choice => {
+        choice.hidden = false;
+        choice.style.display = "";
+        choice.setAttribute("aria-hidden", "false");
+      });
     }
     syncSingleLayoutControls();
 
@@ -5498,7 +5819,7 @@ body.animations-disabled .feed { scroll-behavior:auto !important; }
       return [...source];
     }
 
-    function addLayoutAtSide(side, initialOrder = "random", quickFilter = "") {
+    function addLayoutAtSide(side, initialOrder = "random", quickFilter = "", customFolderFiles = null, customFolderName = "") {
       // Adding a layout is a structural layout change: leave focus mode first.
       // Do it synchronously so the new column is never created inside the old
       // focused widths and no delayed focus callback can re-apply the focus state.
@@ -5572,7 +5893,12 @@ body.animations-disabled .feed { scroll-behavior:auto !important; }
       const newFeed = feeds[previousMode] || createAdditionalFeed();
       if (!newFeed) return;
 
-      if (quickFilter) {
+      if (Array.isArray(customFolderFiles) && customFolderFiles.length) {
+        feedLibraries.set(newFeed, [...customFolderFiles]);
+        feedFilteredLibraries.set(newFeed, [...customFolderFiles]);
+        feedFilterModes.set(newFeed, "all");
+        newFeed.dataset.folderName = customFolderName || "Folder";
+      } else if (quickFilter) {
         const quickLibrary = getQuickLayoutLibrary(quickFilter);
         if (!quickLibrary.length) {
           const label = quickFilter === "images" ? "images" : quickFilter === "gifs" ? "GIFs" : "videos";
@@ -5704,7 +6030,33 @@ body.animations-disabled .feed { scroll-behavior:auto !important; }
       choice.addEventListener("click", event => {
         event.preventDefault();
         event.stopPropagation();
+
+        const menu = choice.closest(".add-layout-menu");
+        if (menu) menu.classList.add("dropdown-dismissed");
+        choice.blur();
+
+        if (choice.dataset.action === "scan-folder") {
+          pendingScanFolderSide = choice.dataset.side === "left" ? "left" : "right";
+          folderOpenIntent = "new";
+          folderInput.click();
+          return;
+        }
+
         addLayoutAtSide(choice.dataset.side, choice.dataset.order || "random", choice.dataset.filter || "");
+      });
+    });
+
+    document.querySelectorAll(".add-layout-menu").forEach(menu => {
+      menu.addEventListener("mouseleave", () => {
+        // A mouse click leaves the + button focused, so :focus-within used to
+        // keep the dropdown visible even after the pointer left the control.
+        // Clear that mouse-created focus first, then reset the temporary
+        // dismissed state for the next hover.
+        const focusedElement = document.activeElement;
+        if (focusedElement && menu.contains(focusedElement) && typeof focusedElement.blur === "function") {
+          focusedElement.blur();
+        }
+        menu.classList.remove("dropdown-dismissed");
       });
     });
 
@@ -6557,8 +6909,12 @@ body.animations-disabled .feed { scroll-behavior:auto !important; }
     }
 
     function createAutoTimerForItem(activeItem, callback) {
-      // Do not advance the gallery while this page is in a background tab.
-      if (document.hidden) return null;
+      // Keep Auto advance alive when the Document Picture-in-Picture window is
+      // visible. Opening the floating player normally hides/backgrounds the main
+      // document, so checking only document.hidden disabled its auto-scroll.
+      const floatingPlayerIsOpen = pipEnabled && pipWindow && !pipWindow.closed;
+      const floatingPlayerIsHidden = floatingPlayerIsOpen && pipWindow.document.hidden;
+      if ((!floatingPlayerIsOpen && document.hidden) || floatingPlayerIsHidden) return null;
       const activeMedia = activeItem.querySelector("img, video");
       if (!activeMedia) return null;
       const name = activeItem.dataset.name || "";
@@ -7153,6 +7509,207 @@ body.animations-disabled .feed { scroll-behavior:auto !important; }
     .add-layout-side-button svg { width:23.75px !important; height:23.75px !important; }
   }
 </style>
+
+<style id="requested-25-percent-larger-layout-controls">
+  /* 25% larger: 44px -> 55px. Hover/active scale values remain unchanged. */
+  .media-lock-button,
+  .layout-close-button,
+  .layout-speed-button {
+    width:55px !important;
+    height:55px !important;
+    border-radius:19px !important;
+  }
+  .media-lock-button::before,
+  .layout-close-button::before,
+  .layout-speed-button::before { border-radius:17px !important; }
+  .media-lock-button svg, .layout-close-button svg { width:25px !important; height:25px !important; }
+  .layout-speed-button .speed-main { font-size:18.75px !important; }
+  .layout-speed-button .speed-sub { font-size:7.5px !important; }
+
+  /* Keep an exact 10px gap between Close, Lock and 2X Speed. */
+  .layout-close-button { right:calc((100% - var(--visible-media-width, 100%)) / 2 + 12px) !important; }
+  .media-lock-button { right:calc((100% - var(--visible-media-width, 100%)) / 2 + 77px) !important; }
+  .layout-speed-button { right:calc((100% - var(--visible-media-width, 100%)) / 2 + 142px) !important; }
+
+  /* Close is hidden with one layout, so shift Lock and 2X Speed to the right edge. */
+  #gallery .media-lock-button, body.single-layout-mode .media-lock-button {
+    right:calc((100% - var(--visible-media-width, 100%)) / 2 + 12px) !important;
+  }
+  #gallery .layout-speed-button, body.single-layout-mode .layout-speed-button {
+    right:calc((100% - var(--visible-media-width, 100%)) / 2 + 77px) !important;
+  }
+
+  /* Move neighboring controls so the larger buttons never overlap them. */
+  .layout-order-button { right:calc((100% - var(--visible-media-width, 100%)) / 2 + 207px) !important; }
+  .item:not(.has-video) .layout-order-button { right:calc((100% - var(--visible-media-width, 100%)) / 2 + 142px) !important; }
+  #gallery .layout-order-button, body.single-layout-mode .layout-order-button {
+    right:calc((100% - var(--visible-media-width, 100%)) / 2 + 142px) !important;
+  }
+  #gallery .item:not(.has-video) .layout-order-button,
+  body.single-layout-mode .item:not(.has-video) .layout-order-button {
+    right:calc((100% - var(--visible-media-width, 100%)) / 2 + 77px) !important;
+  }
+
+  /* Everything button: 25% larger in both dimensions and typography. */
+  .layout-filter-button {
+    width:145px !important;
+    min-width:145px !important;
+    height:55px !important;
+    border-radius:19px !important;
+    padding:0 13px !important;
+    font-size:12.5px !important;
+    right:calc((100% - var(--visible-media-width, 100%)) / 2 + 333px) !important;
+  }
+  .layout-filter-button::before { border-radius:17px !important; }
+  .item:not(.has-video) > .layout-filter-button {
+    right:calc((100% - var(--visible-media-width, 100%)) / 2 + 268px) !important;
+  }
+  body.single-layout-mode #gallery .item.single-controls-current > .layout-filter-button,
+  #gallery .item.single-controls-current > .layout-filter-button { position:fixed; top:12px; right:268px !important; }
+  body.single-layout-mode #gallery .item.single-controls-current:not(.has-video) > .layout-filter-button,
+  #gallery .item.single-controls-current:not(.has-video) > .layout-filter-button { right:203px !important; }
+  body.single-layout-mode #multiGallery .item > .layout-filter-button {
+    right:calc((100% - var(--visible-media-width, 100%)) / 2 + 268px) !important;
+  }
+  body.single-layout-mode #multiGallery .item:not(.has-video) > .layout-filter-button {
+    right:calc((100% - var(--visible-media-width, 100%)) / 2 + 203px) !important;
+  }
+
+
+</style>
+
+<style id="homogeneous-button-colors">
+  /* Unified color system for the settings menu, layout controls and Open Menu trigger. */
+  :root {
+    --button-bg: rgba(35, 40, 52, .94);
+    --button-bg-hover: rgba(50, 57, 73, .98);
+    --button-bg-active: #315ee8;
+    --button-bg-active-hover: #3c69ee;
+    --button-border: rgba(255, 255, 255, .22);
+    --button-border-hover: rgba(255, 255, 255, .34);
+    --button-border-active: #7896ff;
+    --button-text: #f3f6fb;
+    --button-shadow: 0 8px 22px rgba(0, 0, 0, .34),
+                     inset 0 1px 0 rgba(255, 255, 255, .16),
+                     inset 0 -1px 0 rgba(0, 0, 0, .18);
+  }
+
+  /* Main menu controls. */
+  .settings-zone button,
+  .settings-zone select,
+  .settings-zone .file-button,
+  .settings-zone .primary-action,
+  .settings-zone #openFolderBtn,
+  .settings-zone #openNewFolderBtn,
+  .settings-zone #pipBtn {
+    background:
+      linear-gradient(145deg, rgba(255,255,255,.09), transparent 46%),
+      var(--button-bg) !important;
+    border: 1px solid var(--button-border) !important;
+    color: var(--button-text) !important;
+    box-shadow: var(--button-shadow) !important;
+  }
+
+  .settings-zone button:hover,
+  .settings-zone select:hover,
+  .settings-zone .file-button:hover,
+  .settings-zone .primary-action:hover,
+  .settings-zone #openFolderBtn:hover,
+  .settings-zone #openNewFolderBtn:hover,
+  .settings-zone #pipBtn:hover {
+    background:
+      linear-gradient(145deg, rgba(255,255,255,.14), transparent 48%),
+      var(--button-bg-hover) !important;
+    border-color: var(--button-border-hover) !important;
+    color: var(--button-text) !important;
+  }
+
+  .settings-zone button.active,
+  .settings-zone .file-button.active {
+    background:
+      linear-gradient(145deg, rgba(255,255,255,.15), transparent 48%),
+      var(--button-bg-active) !important;
+    border-color: var(--button-border-active) !important;
+    color: #fff !important;
+  }
+
+  .settings-zone button.active:hover,
+  .settings-zone .file-button.active:hover {
+    background:
+      linear-gradient(145deg, rgba(255,255,255,.18), transparent 48%),
+      var(--button-bg-active-hover) !important;
+  }
+
+  /* Open Menu and every button displayed directly on or beside a layout. */
+  #hoverZone,
+  .media-lock-button,
+  .layout-close-button,
+  .layout-speed-button,
+  .layout-order-button,
+  .layout-filter-button,
+  .layout-folder-button,
+  .layout-add-button,
+  .add-layout-button,
+  .add-layout-side-button,
+  .floating-control-button,
+  .add-layout-choice {
+    background:
+      linear-gradient(145deg, rgba(255,255,255,.09), transparent 46%),
+      var(--button-bg) !important;
+    border-color: var(--button-border) !important;
+    color: var(--button-text) !important;
+    box-shadow: var(--button-shadow) !important;
+  }
+
+  #hoverZone:hover,
+  .media-lock-button:hover,
+  .layout-close-button:hover,
+  .layout-speed-button:hover,
+  .layout-order-button:hover,
+  .layout-filter-button:hover,
+  .layout-folder-button:hover,
+  .layout-add-button:hover,
+  .add-layout-button:hover,
+  .add-layout-side-button:hover,
+  .floating-control-button:hover,
+  .add-layout-choice:hover {
+    background:
+      linear-gradient(145deg, rgba(255,255,255,.14), transparent 48%),
+      var(--button-bg-hover) !important;
+    border-color: var(--button-border-hover) !important;
+    color: var(--button-text) !important;
+  }
+
+  .layout-speed-button.active,
+  .layout-filter-button.active,
+  .layout-folder-button.active,
+  .layout-order-button.active,
+  .layout-add-button.active,
+  .add-layout-button.active,
+  .floating-control-button.active,
+  .media-lock-button.active,
+  .item.locked .media-lock-button {
+    background:
+      linear-gradient(145deg, rgba(255,255,255,.15), transparent 48%),
+      var(--button-bg-active) !important;
+    border-color: var(--button-border-active) !important;
+    color: #fff !important;
+  }
+
+  .layout-speed-button.active:hover,
+  .layout-filter-button.active:hover,
+  .layout-folder-button.active:hover,
+  .layout-order-button.active:hover,
+  .layout-add-button.active:hover,
+  .add-layout-button.active:hover,
+  .floating-control-button.active:hover,
+  .media-lock-button.active:hover,
+  .item.locked .media-lock-button:hover {
+    background:
+      linear-gradient(145deg, rgba(255,255,255,.18), transparent 48%),
+      var(--button-bg-active-hover) !important;
+  }
+</style>
 </head><body><div id="pipRoot"></div>
 <style id="single-layout-fixed-controls-during-scroll-fix">
   /* In the one-layout gallery, keep the controls pinned to the viewport while
@@ -7379,8 +7936,46 @@ body.animations-disabled .feed { scroll-behavior:auto !important; }
     z-index:2147483001 !important;
   }
 </style>
+
+<style id="single-layout-controls-hover-animation-fix">
+  /* Restore hover/press scaling in one-layout mode.
+     These rules come last so they override the mode-1 reset transform. */
+  body.single-layout-mode #gallery .item > .layout-controls-group > button,
+  #gallery .item > .layout-controls-group > button {
+    transition:background .18s ease, border-color .18s ease, box-shadow .18s ease, transform .14s cubic-bezier(.2,.8,.2,1) !important;
+    transform:scale(1) !important;
+    transform-origin:center !important;
+    will-change:transform;
+  }
+
+  body.single-layout-mode #gallery .item > .layout-controls-group > button:hover,
+  #gallery .item > .layout-controls-group > button:hover {
+    transform:scale(1.04) !important;
+  }
+
+  body.single-layout-mode #gallery .item > .layout-controls-group > button:active,
+  #gallery .item > .layout-controls-group > button:active {
+    transform:scale(.96) !important;
+  }
+</style>
 </body></html>`);
       pipWindow.document.close();
+      applyGlassVariablesToRoot(pipWindow.document.documentElement);
+
+      // Pause only while the floating window itself is hidden, and restart its
+      // timer as soon as it becomes visible again.
+      pipWindow.document.addEventListener("visibilitychange", () => {
+        if (!pipEnabled || !pipWindow || pipWindow.closed) return;
+        if (pipWindow.document.hidden) {
+          clearAutoNextTimer();
+          stopAllPipVideos();
+        } else {
+          const slide = pipWindow.document.querySelector(".pipSlide");
+          if (slide) activatePipSlide(slide);
+          startPipAutoTimer();
+        }
+      });
+
       pipWindow.document.documentElement.style.setProperty("--pip-fit", pipFitMode);
       pipWindow.document.documentElement.classList.toggle("pipBlurEnabled", blurredBackgroundEnabled);
       pipWindow.document.addEventListener("wheel", function (event) {
@@ -7846,7 +8441,19 @@ body.animations-disabled .feed { scroll-behavior:auto !important; }
       startPipAutoTimer();
     }
 
-    function startPipAutoTimer() { clearAutoNextTimer(); if (!autoNextEnabled || !pipEnabled || isFeedLocked(gallery)) return; const activeItem = getActiveItemInFeed(gallery); if (!activeItem) return; autoNextTimer = createAutoTimerForItem(activeItem, () => pipScrollNext()); }
+    function startPipAutoTimer() {
+      clearAutoNextTimer();
+      if (!autoNextEnabled || !pipEnabled || isFeedLocked(gallery)) return;
+      const activeItem = (pipCurrentGalleryItem && gallery.contains(pipCurrentGalleryItem))
+        ? pipCurrentGalleryItem
+        : getActiveItemInFeed(gallery);
+      if (!activeItem) return;
+      autoNextTimer = createAutoTimerForItem(activeItem, () => {
+        if (!pipEnabled || !pipWindow || pipWindow.closed) return;
+        if (pipCurrentGalleryItem !== activeItem) return;
+        pipScrollNext();
+      });
+    }
 
     function getAdjacentGalleryItem(direction) {
       let items = Array.from(gallery.querySelectorAll(".item"));
@@ -8014,6 +8621,14 @@ body.animations-disabled .feed { scroll-behavior:auto !important; }
         const targetItem = getAdjacentGalleryItem(direction);
         if (!currentSlide || !targetItem) return;
 
+        // A new floating-player visit always starts a fresh Auto timer. Without
+        // this reset, an old timestamp left on a preloaded/previously visited item
+        // can make the next timer expire immediately and visually skip one media.
+        targetItem.dataset.autoAdvanceStartedAt = String(performance.now());
+        if (pipCurrentGalleryItem && pipCurrentGalleryItem !== targetItem) {
+          delete pipCurrentGalleryItem.dataset.autoAdvanceStartedAt;
+        }
+
         stopAllPageVideosForPip();
         let targetSlide = null;
         if (pipDragPreview && pipDragPreview.direction === direction && pipDragPreview.targetItem === targetItem) {
@@ -8180,8 +8795,19 @@ body.animations-disabled .feed { scroll-behavior:auto !important; }
     }
 
     document.addEventListener("visibilitychange", () => {
-      if (document.hidden) pauseGalleryWhileHidden();
-      else resumeGalleryAfterHidden();
+      const floatingPlayerIsOpen = pipEnabled && pipWindow && !pipWindow.closed;
+      if (document.hidden) {
+        // Document PiP backgrounds the main page. Do not clear the shared auto
+        // timer in that case, otherwise the floating player can never advance.
+        if (floatingPlayerIsOpen) {
+          stopAllPageVideosForPip();
+          startPipAutoTimer();
+        } else {
+          pauseGalleryWhileHidden();
+        }
+      } else {
+        resumeGalleryAfterHidden();
+      }
     });
 
     enableMobileAutoplayMode();
@@ -8764,5 +9390,56 @@ loadServerFiles();
   setTimeout(requestUpdate, 300);
 })();
 </script>
+
+
+<style id="unified-layout-control-corner-ratio">
+  /* Keep every floating layout control at the exact same corner ratio. */
+  .layout-controls-group > .layout-filter-button,
+  .layout-controls-group > .layout-order-button,
+  .layout-controls-group > .layout-speed-button,
+  .layout-controls-group > .media-lock-button,
+  .layout-controls-group > .layout-close-button,
+  .layout-filter-button,
+  .layout-order-button,
+  .layout-speed-button,
+  .media-lock-button,
+  .layout-close-button {
+    border-radius:15px !important;
+  }
+
+  .layout-controls-group > .layout-filter-button::before,
+  .layout-controls-group > .layout-order-button::before,
+  .layout-controls-group > .layout-speed-button::before,
+  .layout-controls-group > .media-lock-button::before,
+  .layout-controls-group > .layout-close-button::before,
+  .layout-filter-button::before,
+  .layout-order-button::before,
+  .layout-speed-button::before,
+  .media-lock-button::before,
+  .layout-close-button::before {
+    border-radius:13px !important;
+  }
+</style>
+
+<style id="single-layout-use-exact-multi-layout-hover">
+  /* Mode 1 uses the exact same interaction values as multi-layout mode.
+     These selectors only restore the shared transform rules after the later
+     mode-1 positioning reset; all original per-button hover colors/shadows remain untouched. */
+  body.single-layout-mode #gallery .item > .layout-controls-group > button,
+  #gallery .item > .layout-controls-group > button {
+    transform:scale(1) !important;
+    transition:background .18s ease, border-color .18s ease, box-shadow .18s ease, transform .12s ease !important;
+  }
+
+  body.single-layout-mode #gallery .item > .layout-controls-group > button:hover,
+  #gallery .item > .layout-controls-group > button:hover {
+    transform:scale(1.04) !important;
+  }
+
+  body.single-layout-mode #gallery .item > .layout-controls-group > button:active,
+  #gallery .item > .layout-controls-group > button:active {
+    transform:scale(.96) !important;
+  }
+</style>
 </body>
 </html>
