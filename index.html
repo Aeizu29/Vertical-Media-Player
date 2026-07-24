@@ -2566,6 +2566,719 @@ body.animations-disabled .feed { scroll-behavior:auto !important; }
   }
 </style>
 
+
+<style id="x-profile-inspired-control-center-final">
+  :root {
+    --x-bg:#000000;
+    --x-panel:#050505;
+    --x-surface:#0b0b0c;
+    --x-surface-hover:#16181c;
+    --x-border:#2f3336;
+    --x-border-strong:#536471;
+    --x-text:#e7e9ea;
+    --x-muted:#71767b;
+    --x-soft:#8b98a5;
+    --x-focus:#ffffff;
+  }
+
+  html, body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif !important; }
+
+  /* Compact top action inspired by the outlined profile buttons. */
+  #hoverZone {
+    top:12px !important;
+    width:auto !important;
+    min-width:214px !important;
+    height:46px !important;
+    padding:0 22px !important;
+    gap:10px !important;
+    border:2px solid var(--x-border) !important;
+    border-radius:999px !important;
+    background:rgba(0,0,0,.92) !important;
+    color:var(--x-text) !important;
+    box-shadow:0 10px 34px rgba(0,0,0,.42) !important;
+    transform:translateX(-50%) !important;
+  }
+  #hoverZone:hover,
+  #hoverZone[aria-expanded="true"] {
+    background:var(--x-surface-hover) !important;
+    border-color:var(--x-border-strong) !important;
+    transform:translateX(-50%) !important;
+  }
+  #hoverZone .trigger-icon {
+    width:21px;
+    height:21px;
+    fill:none;
+    stroke:currentColor;
+    stroke-width:2;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+  }
+  #hoverZone .open-menu-label {
+    font-size:15px !important;
+    font-weight:750 !important;
+    letter-spacing:0 !important;
+    text-indent:0 !important;
+    text-transform:none !important;
+    text-shadow:none !important;
+  }
+  #topBar {
+    top:68px !important;
+    left:12px !important;
+    right:12px !important;
+    justify-content:center !important;
+  }
+  #topBar.show { animation:x-panel-in .16s ease-out both; }
+  @keyframes x-panel-in {
+    from { opacity:0; transform:translateY(-8px) scale(.99); }
+    to { opacity:1; transform:translateY(0) scale(1); }
+  }
+
+  #leftControls.toolbar-shell {
+    width:min(1660px, calc(100vw - 24px)) !important;
+    max-width:1660px !important;
+    max-height:calc(100dvh - 82px) !important;
+    overflow:auto !important;
+    padding:0 20px 20px !important;
+    border:1px solid var(--x-border) !important;
+    border-radius:30px !important;
+    background:rgba(0,0,0,.985) !important;
+    box-shadow:0 24px 80px rgba(0,0,0,.72) !important;
+    color:var(--x-text) !important;
+    scrollbar-width:thin;
+    scrollbar-color:#333639 transparent;
+  }
+
+  .settings-header {
+    position:sticky;
+    top:0;
+    z-index:20;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:space-between !important;
+    gap:22px !important;
+    margin:0 !important;
+    padding:22px 4px 18px !important;
+    border-bottom:0 !important;
+    background:#000 !important;
+  }
+  .settings-eyebrow {
+    color:var(--x-muted) !important;
+    font-size:11px !important;
+    font-weight:800 !important;
+    letter-spacing:.12em !important;
+  }
+  .settings-header h1 {
+    margin:4px 0 4px !important;
+    color:var(--x-text) !important;
+    font-size:30px !important;
+    font-weight:800 !important;
+    letter-spacing:-.035em !important;
+  }
+  .settings-header p {
+    margin:0 !important;
+    color:var(--x-muted) !important;
+    font-size:13px !important;
+  }
+  .settings-header-actions {
+    display:flex;
+    align-items:center;
+    gap:12px;
+    flex:0 0 auto;
+  }
+  .settings-view-picker { position:relative; }
+  .settings-header-action {
+    min-width:170px !important;
+    height:48px !important;
+    min-height:48px !important;
+    padding:0 24px !important;
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:9px !important;
+    border:2px solid var(--x-border) !important;
+    border-radius:999px !important;
+    background:#000 !important;
+    color:var(--x-text) !important;
+    font-size:15px !important;
+    font-weight:750 !important;
+    box-shadow:none !important;
+  }
+  .settings-header-action:hover,
+  .settings-header-action[aria-expanded="true"] {
+    background:var(--x-surface-hover) !important;
+    border-color:var(--x-border-strong) !important;
+    transform:none !important;
+  }
+  #settingsCloseBtn { min-width:132px !important; }
+  .settings-header-action svg {
+    width:18px;
+    height:18px;
+    fill:none;
+    stroke:currentColor;
+    stroke-width:2.2;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+  }
+
+  .settings-view-menu {
+    position:absolute;
+    top:calc(100% + 10px);
+    right:0;
+    z-index:100;
+    display:flex;
+    flex-direction:column;
+    width:300px;
+    padding:10px;
+    border:1px solid var(--x-border) !important;
+    border-radius:28px;
+    background:#000;
+    box-shadow:0 18px 50px rgba(0,0,0,.68);
+    opacity:0;
+    visibility:hidden;
+    transform:translateY(-6px) scale(.98);
+    transform-origin:top right;
+    pointer-events:none;
+    transition:opacity .14s ease, transform .14s ease, visibility 0s linear .14s;
+  }
+  .settings-view-menu.open {
+    opacity:1;
+    visibility:visible;
+    transform:translateY(0) scale(1);
+    pointer-events:auto;
+    transition-delay:0s;
+  }
+  .settings-view-menu button {
+    width:100% !important;
+    height:58px !important;
+    min-height:58px !important;
+    display:grid !important;
+    grid-template-columns:42px 1fr !important;
+    align-items:center !important;
+    padding:0 14px !important;
+    border:0 !important;
+    border-radius:16px !important;
+    background:transparent !important;
+    color:var(--x-text) !important;
+    font-size:18px !important;
+    font-weight:500 !important;
+    text-align:left !important;
+  }
+  .settings-view-menu button:hover { background:var(--x-surface-hover) !important; }
+  .view-menu-icon {
+    display:grid;
+    place-items:center;
+    width:30px;
+    color:var(--x-text);
+    font-size:23px;
+    font-weight:400;
+  }
+
+  /* Icon navigation row, based on the profile navigation in the reference. */
+  .settings-tabs {
+    position:sticky;
+    top:108px;
+    z-index:15;
+    display:grid;
+    grid-template-columns:repeat(5,minmax(0,1fr));
+    min-height:70px;
+    margin:0 -20px 18px;
+    padding:0 20px;
+    border-bottom:1px solid #202327;
+    background:#000;
+  }
+  .settings-tab {
+    position:relative;
+    min-width:0 !important;
+    height:70px !important;
+    min-height:70px !important;
+    padding:0 10px !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:10px !important;
+    border:0 !important;
+    border-radius:0 !important;
+    background:transparent !important;
+    color:var(--x-muted) !important;
+    font-size:15px !important;
+    font-weight:650 !important;
+    box-shadow:none !important;
+  }
+  .settings-tab svg {
+    width:24px;
+    height:24px;
+    fill:none;
+    stroke:currentColor;
+    stroke-width:1.9;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+  }
+  .settings-tab:hover { color:var(--x-text) !important; background:rgba(231,233,234,.05) !important; transform:none !important; }
+  .settings-tab.active { color:var(--x-text) !important; background:transparent !important; }
+  .settings-tab.active::after {
+    content:"";
+    position:absolute;
+    left:18%;
+    right:18%;
+    bottom:0;
+    height:4px;
+    border-radius:999px;
+    background:#fff;
+  }
+
+  .settings-grid {
+    display:grid !important;
+    grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+    gap:14px !important;
+    align-items:start !important;
+  }
+  .settings-grid.single-view { grid-template-columns:minmax(0,1fr) !important; }
+  .settings-grid.single-view .settings-zone {
+    width:min(1120px,100%);
+    margin:0 auto;
+  }
+  .settings-zone.view-hidden { display:none !important; }
+
+  /* Each section is a large black dropdown-style card. */
+  .settings-zone {
+    display:flex !important;
+    flex-direction:column !important;
+    gap:0 !important;
+    min-width:0 !important;
+    padding:0 20px 18px !important;
+    overflow:hidden;
+    border:1px solid var(--x-border) !important;
+    border-radius:28px !important;
+    background:#000 !important;
+    box-shadow:none !important;
+  }
+  .zone-heading {
+    display:flex !important;
+    align-items:center !important;
+    gap:12px !important;
+    min-height:74px !important;
+    padding:0 !important;
+    border-bottom:1px solid #202327;
+  }
+  .zone-icon {
+    display:grid !important;
+    place-items:center !important;
+    width:38px !important;
+    height:38px !important;
+    flex:0 0 38px !important;
+    border:1px solid var(--x-border) !important;
+    border-radius:12px !important;
+    background:transparent !important;
+    color:var(--x-text) !important;
+    font-size:14px !important;
+    font-weight:800 !important;
+  }
+  .zone-heading h2 {
+    margin:0 0 3px !important;
+    color:var(--x-text) !important;
+    font-size:17px !important;
+    font-weight:750 !important;
+    letter-spacing:-.015em !important;
+    text-transform:none !important;
+  }
+  .zone-heading p {
+    display:block !important;
+    margin:0 !important;
+    color:var(--x-muted) !important;
+    font-size:11px !important;
+  }
+
+  .settings-zone .control-group {
+    display:grid !important;
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    gap:10px !important;
+    width:100% !important;
+    min-width:0 !important;
+    padding:18px 0 2px !important;
+    border:0 !important;
+    border-top:1px solid #202327 !important;
+    border-radius:0 !important;
+    background:transparent !important;
+    box-shadow:none !important;
+  }
+  .settings-zone .control-group:first-of-type { border-top:0 !important; }
+  .settings-zone .timing-group { grid-template-columns:repeat(3,minmax(0,1fr)) !important; }
+  .settings-zone .start-group { grid-template-columns:1fr !important; }
+  .settings-zone .scroll-group { grid-template-columns:1fr !important; }
+
+  .group-heading {
+    grid-column:1 / -1 !important;
+    min-height:0 !important;
+    padding:0 2px 2px !important;
+    margin:0 0 4px !important;
+    border:0 !important;
+  }
+  .group-heading .group-number { display:none !important; }
+  .group-heading .group-label {
+    color:var(--x-text) !important;
+    font-size:13px !important;
+    font-weight:750 !important;
+    letter-spacing:0 !important;
+    text-transform:none !important;
+  }
+  .group-heading small {
+    display:block !important;
+    margin-top:4px;
+    color:var(--x-muted) !important;
+    font-size:10px !important;
+    line-height:1.35 !important;
+  }
+  .section-help {
+    display:block !important;
+    padding:10px 12px !important;
+    border:1px solid #202327 !important;
+    border-radius:15px !important;
+    background:#050505 !important;
+    color:var(--x-muted) !important;
+    font-size:10px !important;
+    line-height:1.35 !important;
+  }
+
+  /* Every menu control uses the same rounded outlined language. */
+  .settings-zone button,
+  .settings-zone select,
+  .settings-zone .file-button,
+  .settings-zone input[type=number],
+  .settings-zone input[type=color],
+  .settings-zone .appearance-value,
+  .settings-zone #volumeText,
+  .settings-zone .playback-volume {
+    border:1px solid var(--x-border) !important;
+    background:#000 !important;
+    color:var(--x-text) !important;
+    box-shadow:none !important;
+  }
+  .settings-zone button,
+  .settings-zone select,
+  .settings-zone .file-button,
+  .settings-zone input[type=number] {
+    height:44px !important;
+    min-height:44px !important;
+    padding:0 16px !important;
+    border-radius:999px !important;
+    font-size:12px !important;
+    font-weight:700 !important;
+  }
+  .settings-zone button:hover,
+  .settings-zone select:hover,
+  .settings-zone .file-button:hover {
+    background:var(--x-surface-hover) !important;
+    border-color:var(--x-border-strong) !important;
+    transform:none !important;
+  }
+  .settings-zone button.active,
+  .settings-zone .file-button.active {
+    background:var(--x-text) !important;
+    border-color:var(--x-text) !important;
+    color:#000 !important;
+  }
+  .settings-zone button.active:hover { background:#fff !important; color:#000 !important; }
+  .settings-zone .primary-action,
+  .settings-zone #openFolderBtn,
+  .settings-zone #pipBtn,
+  .settings-zone #openNewFolderBtn {
+    height:50px !important;
+    min-height:50px !important;
+    border:2px solid var(--x-border-strong) !important;
+    border-radius:999px !important;
+    background:#000 !important;
+    color:var(--x-text) !important;
+    font-size:14px !important;
+    font-weight:800 !important;
+  }
+  .settings-zone .primary-action:hover,
+  .settings-zone #openFolderBtn:hover,
+  .settings-zone #pipBtn:hover,
+  .settings-zone #openNewFolderBtn:hover {
+    background:var(--x-surface-hover) !important;
+    border-color:#8899a6 !important;
+    color:#fff !important;
+  }
+  .settings-zone button:disabled,
+  .settings-zone select:disabled,
+  .settings-zone input:disabled {
+    opacity:.42 !important;
+    cursor:not-allowed !important;
+  }
+  .settings-zone button:focus-visible,
+  .settings-zone select:focus-visible,
+  .settings-zone input:focus-visible,
+  .settings-zone .file-button:focus-visible,
+  #hoverZone:focus-visible,
+  .settings-header-action:focus-visible,
+  .settings-tab:focus-visible {
+    outline:2px solid #fff !important;
+    outline-offset:3px !important;
+  }
+
+  .field-stack,
+  .compact-fields label { color:var(--x-text) !important; }
+  .field-stack > span,
+  .compact-fields label > span {
+    color:var(--x-muted) !important;
+    font-size:10px !important;
+    font-weight:700 !important;
+    letter-spacing:.04em !important;
+    text-transform:uppercase !important;
+  }
+  .input-unit small,
+  .field-stack small { color:var(--x-muted) !important; }
+  .playback-volume {
+    padding:12px !important;
+    border-radius:20px !important;
+  }
+  .appearance-value,
+  #volumeText {
+    height:32px !important;
+    min-height:32px !important;
+    border-radius:999px !important;
+    color:var(--x-soft) !important;
+    font-size:11px !important;
+  }
+  #backgroundColorPicker {
+    width:54px !important;
+    height:42px !important;
+    padding:4px !important;
+    border-radius:14px !important;
+  }
+  select { color-scheme:dark; }
+  #mediaModeSelect option,
+  #filterMode option { color:var(--x-text) !important; background:#000 !important; }
+
+  input[type="range"] {
+    --range-accent:#ffffff !important;
+    --range-track:#2f3336 !important;
+    --range-track-hover:#536471 !important;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    border-color:#fff !important;
+    background:#fff !important;
+    box-shadow:0 2px 8px rgba(0,0,0,.6) !important;
+  }
+  input[type="range"]::-moz-range-thumb {
+    border-color:#fff !important;
+    background:#fff !important;
+    box-shadow:0 2px 8px rgba(0,0,0,.6) !important;
+  }
+
+  /* Side add menus and every floating media button use the same monochrome UX. */
+  .add-layout-side-button,
+  .media-lock-button,
+  .layout-close-button,
+  .layout-speed-button,
+  .layout-order-button,
+  .layout-filter-button,
+  .layout-folder-button,
+  .floating-control-button {
+    border:1px solid rgba(255,255,255,.28) !important;
+    border-radius:999px !important;
+    background:rgba(0,0,0,.86) !important;
+    color:#e7e9ea !important;
+    box-shadow:0 8px 24px rgba(0,0,0,.48) !important;
+  }
+  .add-layout-side-button:hover,
+  .media-lock-button:hover,
+  .layout-close-button:hover,
+  .layout-speed-button:hover,
+  .layout-order-button:hover,
+  .layout-filter-button:hover,
+  .layout-folder-button:hover,
+  .floating-control-button:hover {
+    border-color:#8b98a5 !important;
+    background:#16181c !important;
+    color:#fff !important;
+  }
+  .layout-close-button:hover { background:#16181c !important; border-color:#8b98a5 !important; }
+  .layout-speed-button.active,
+  .layout-order-button.active,
+  .layout-filter-button.active,
+  .layout-folder-button.active {
+    background:#fff !important;
+    border-color:#fff !important;
+    color:#000 !important;
+  }
+  .add-layout-dropdown {
+    min-width:260px !important;
+    padding:10px !important;
+    border:1px solid var(--x-border) !important;
+    border-radius:28px !important;
+    background:#000 !important;
+    box-shadow:0 18px 50px rgba(0,0,0,.68) !important;
+  }
+  .add-layout-choice {
+    height:58px !important;
+    min-height:58px !important;
+    padding:0 16px !important;
+    border:0 !important;
+    border-radius:16px !important;
+    background:transparent !important;
+    color:var(--x-text) !important;
+    font-size:17px !important;
+    font-weight:500 !important;
+  }
+  .add-layout-choice:hover { background:var(--x-surface-hover) !important; }
+  .add-layout-choice small { color:var(--x-muted) !important; font-size:11px !important; }
+  .add-layout-divider { background:#202327 !important; }
+
+  #gallery::before,
+  .feed::before,
+  .media-info-overlay,
+  .media-fps-counter {
+    border-color:var(--x-border) !important;
+    border-radius:18px !important;
+    background:rgba(0,0,0,.88) !important;
+    color:var(--x-text) !important;
+    box-shadow:0 8px 24px rgba(0,0,0,.42) !important;
+  }
+
+  /* Startup screen and its primary action are part of the same design system. */
+  #startupScreen { background:#000 !important; }
+  #startupTitle {
+    color:#e7e9ea !important;
+    text-shadow:none !important;
+    text-transform:none !important;
+    letter-spacing:-.05em !important;
+  }
+  #startupFeatures { color:var(--x-muted) !important; }
+  #startupFeaturesIntro { color:var(--x-text) !important; }
+  #startupFeatureList li {
+    border:1px solid var(--x-border) !important;
+    background:#000 !important;
+    color:var(--x-soft) !important;
+  }
+  #startupOpenFolder {
+    min-height:112px !important;
+    border:2px solid var(--x-border-strong) !important;
+    border-radius:999px !important;
+    background:#000 !important;
+    color:#e7e9ea !important;
+    box-shadow:none !important;
+  }
+  #startupOpenFolder:hover {
+    background:var(--x-surface-hover) !important;
+    border-color:#8899a6 !important;
+    transform:none !important;
+    box-shadow:none !important;
+  }
+
+  @media (max-width:1380px) {
+    .settings-grid { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+  }
+  @media (max-width:840px), (pointer:coarse) {
+    #hoverZone { top:8px !important; min-width:184px !important; height:44px !important; }
+    #topBar { top:60px !important; left:5px !important; right:5px !important; }
+    #leftControls.toolbar-shell {
+      width:calc(100vw - 10px) !important;
+      max-height:calc(100dvh - 65px) !important;
+      padding:0 12px 14px !important;
+      border-radius:24px !important;
+    }
+    .settings-header {
+      align-items:flex-start !important;
+      flex-direction:column !important;
+      padding:16px 2px 12px !important;
+    }
+    .settings-header-actions { width:100%; }
+    .settings-view-picker { flex:1; }
+    .settings-header-action { width:100% !important; min-width:0 !important; }
+    #settingsCloseBtn { width:auto !important; min-width:108px !important; }
+    .settings-view-menu { left:0; right:auto; width:min(310px, calc(100vw - 34px)); }
+    .settings-tabs {
+      top:142px;
+      margin:0 -12px 14px;
+      padding:0 4px;
+      overflow-x:auto;
+      grid-template-columns:repeat(5,minmax(92px,1fr));
+      scrollbar-width:none;
+    }
+    .settings-tabs::-webkit-scrollbar { display:none; }
+    .settings-tab { height:62px !important; min-height:62px !important; font-size:12px !important; gap:6px !important; }
+    .settings-tab svg { width:21px; height:21px; }
+    .settings-grid { grid-template-columns:1fr !important; }
+    .settings-zone { border-radius:24px !important; padding:0 15px 14px !important; }
+    .settings-zone .timing-group { grid-template-columns:1fr !important; }
+  }
+</style>
+
+
+<style id="duration-sliders-match-volume">
+  /* Image, GIF and Video duration sliders now use the exact visual language
+     of the Volume slider: the same neutral track, large white thumb and sizing. */
+  #imageDurationSlider,
+  #gifDurationSlider,
+  #videoDurationSlider {
+    --range-accent: #ffffff !important;
+    --range-track: #2f3336 !important;
+    --range-track-hover: #536471 !important;
+    height: 32.5px !important;
+    min-height: 32.5px !important;
+    margin-top: 4px !important;
+  }
+
+  #imageDurationSlider::-webkit-slider-runnable-track,
+  #gifDurationSlider::-webkit-slider-runnable-track,
+  #videoDurationSlider::-webkit-slider-runnable-track {
+    height: 8.75px !important;
+    border-radius: 999px !important;
+    background: #2f3336 !important;
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.28), 0 1px 0 rgba(255,255,255,.04) !important;
+  }
+
+  #imageDurationSlider:hover::-webkit-slider-runnable-track,
+  #gifDurationSlider:hover::-webkit-slider-runnable-track,
+  #videoDurationSlider:hover::-webkit-slider-runnable-track {
+    background: #536471 !important;
+  }
+
+  #imageDurationSlider::-webkit-slider-thumb,
+  #gifDurationSlider::-webkit-slider-thumb,
+  #videoDurationSlider::-webkit-slider-thumb {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    width: 25px !important;
+    height: 25px !important;
+    margin-top: -8.125px !important;
+    border: 2px solid #ffffff !important;
+    border-radius: 50% !important;
+    background: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,.6) !important;
+  }
+
+  #imageDurationSlider::-moz-range-track,
+  #gifDurationSlider::-moz-range-track,
+  #videoDurationSlider::-moz-range-track {
+    height: 8.75px !important;
+    border: 0 !important;
+    border-radius: 999px !important;
+    background: #2f3336 !important;
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.28), 0 1px 0 rgba(255,255,255,.04) !important;
+  }
+
+  #imageDurationSlider::-moz-range-progress,
+  #gifDurationSlider::-moz-range-progress,
+  #videoDurationSlider::-moz-range-progress {
+    height: 8.75px !important;
+    border-radius: 999px !important;
+    background: #2f3336 !important;
+  }
+
+  #imageDurationSlider::-moz-range-thumb,
+  #gifDurationSlider::-moz-range-thumb,
+  #videoDurationSlider::-moz-range-thumb {
+    width: 25px !important;
+    height: 25px !important;
+    border: 2px solid #ffffff !important;
+    border-radius: 50% !important;
+    background: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,.6) !important;
+  }
+</style>
+
 </head>
 <body class="no-visible-layouts hide-media-names show-blurred-background">
 <div id="startupScreen">
@@ -2590,7 +3303,10 @@ body.animations-disabled .feed { scroll-behavior:auto !important; }
   <label id="startupOpenFolder" for="folderInput">Open Folder</label>
 </div>
 
-<div id="hoverZone" role="button" tabindex="0" aria-label="Open menu" aria-expanded="false"><span class="open-menu-label">OPEN MENU</span></div>
+<div id="hoverZone" role="button" tabindex="0" aria-label="Open control center" aria-expanded="false">
+  <svg class="trigger-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10"></path><path d="M18 7h2"></path><circle cx="16" cy="7" r="2"></circle><path d="M4 17h2"></path><path d="M10 17h10"></path><circle cx="8" cy="17" r="2"></circle></svg>
+  <span class="open-menu-label">Control center</span>
+</div>
 <div id="addLayoutLeftMenu" class="add-layout-menu">
   <button id="addLayoutLeftBtn" class="add-layout-side-button" type="button" aria-label="Add a layout on the left" aria-haspopup="menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg></button>
   <div class="add-layout-dropdown" role="menu" aria-label="Add left layout order">
@@ -2619,13 +3335,45 @@ body.animations-disabled .feed { scroll-behavior:auto !important; }
 <div id="topBar">
 <div class="toolbar-shell" id="leftControls">
 <div class="settings-header">
-<div>
+<div class="settings-heading-copy">
 <div class="settings-eyebrow">VERTICAL MEDIA PLAYER</div>
 <div class="settings-title-row"><h1>Control center</h1></div>
-<p>All options are available on this page, from top to bottom.</p>
+<p>Choose a category below or keep every control visible.</p>
 </div>
-<div class="settings-close-note">Move the mouse away to close</div>
+<div class="settings-header-actions">
+  <div class="settings-view-picker">
+    <button id="settingsViewBtn" class="settings-header-action" type="button" aria-haspopup="menu" aria-expanded="false">
+      <span id="settingsViewLabel">All controls</span>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"></path></svg>
+    </button>
+    <div id="settingsViewMenu" class="settings-view-menu" role="menu" aria-label="Control center categories">
+      <button type="button" data-settings-view="all" role="menuitem"><span class="view-menu-icon">⌘</span><span>All controls</span></button>
+      <button type="button" data-settings-view="setup" role="menuitem"><span class="view-menu-icon">▣</span><span>Source &amp; layout</span></button>
+      <button type="button" data-settings-view="play" role="menuitem"><span class="view-menu-icon">▶</span><span>Playback</span></button>
+      <button type="button" data-settings-view="look" role="menuitem"><span class="view-menu-icon">✦</span><span>Appearance</span></button>
+      <button type="button" data-settings-view="tools" role="menuitem"><span class="view-menu-icon">⌁</span><span>Extra tools</span></button>
+    </div>
+  </div>
+  <button id="settingsCloseBtn" class="settings-header-action" type="button">Close</button>
 </div>
+</div>
+<nav class="settings-tabs" aria-label="Control center sections">
+  <button class="settings-tab active" type="button" data-settings-view="all" aria-pressed="true">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"></rect><path d="M3 9h18"></path><path d="M8 14h3"></path></svg><span>All</span>
+  </button>
+  <button class="settings-tab" type="button" data-settings-view="setup" aria-pressed="false">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7.5h6l2 2h10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"></path><path d="M3 10h18"></path></svg><span>Source</span>
+  </button>
+  <button class="settings-tab" type="button" data-settings-view="play" aria-pressed="false">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"></rect><path d="m10 9 5 3-5 3Z"></path></svg><span>Playback</span>
+  </button>
+  <button class="settings-tab" type="button" data-settings-view="look" aria-pressed="false">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 1.3 4.2L17.5 8.5l-4.2 1.3L12 14l-1.3-4.2-4.2-1.3 4.2-1.3Z"></path><path d="m18 14 .8 2.2L21 17l-2.2.8L18 20l-.8-2.2L15 17l2.2-.8Z"></path></svg><span>Appearance</span>
+  </button>
+  <button class="settings-tab" type="button" data-settings-view="tools" aria-pressed="false">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10"></path><path d="M18 7h2"></path><circle cx="16" cy="7" r="2"></circle><path d="M4 17h2"></path><path d="M10 17h10"></path><circle cx="8" cy="17" r="2"></circle></svg><span>Tools</span>
+  </button>
+</nav>
 <div class="settings-grid"><div class="settings-zone setup-zone"><div class="zone-heading"><span class="zone-icon">1</span><div><h2>Source & layout</h2><p>Load media and build the screen.</p></div></div><section class="control-group file-group primary-section" data-settings-panel="setup">
 <div class="group-heading">
 <span class="group-number">1</span>
@@ -3254,11 +4002,10 @@ body.animations-disabled .feed { scroll-behavior:auto !important; }
       return window.matchMedia("(pointer: coarse)").matches || "ontouchstart" in window;
     }
 
-    // Click the glass bar to open the settings. The user gets a short moment
-    // to reach the panel, and a small grace period when leaving it.
+    // Persistent click-to-open control center. It closes with the Close button,
+    // the trigger, Escape, or a click outside the panel.
     let menuEntryTimer = null;
     let menuCloseTimer = null;
-    const MENU_LEAVE_DELAY = 500;
 
     function cancelMenuClose() {
       clearTimeout(menuCloseTimer);
@@ -3273,64 +4020,51 @@ body.animations-disabled .feed { scroll-behavior:auto !important; }
       hoverZone.setAttribute("aria-expanded", "false");
     }
 
-    function scheduleMenuClose() {
-      cancelMenuClose();
-      menuCloseTimer = setTimeout(closeSettingsMenu, MENU_LEAVE_DELAY);
-    }
-
     function openSettingsMenu() {
       clearTimeout(menuEntryTimer);
       cancelMenuClose();
       topBar.classList.add("show");
       hoverZone.setAttribute("aria-expanded", "true");
-
-      // Prevent the menu from vanishing while moving from the top bar to it.
-      menuEntryTimer = setTimeout(() => {
-        if (!topBar.matches(":hover")) closeSettingsMenu();
-      }, 1000);
     }
 
-    hoverZone.addEventListener("pointerenter", function () {
-      openSettingsMenu();
-    });
+    function toggleSettingsMenu() {
+      if (topBar.classList.contains("show")) closeSettingsMenu();
+      else openSettingsMenu();
+    }
 
-    hoverZone.addEventListener("pointerleave", function () {
-      // Give the pointer time to move from the trigger into the settings panel.
-      clearTimeout(menuEntryTimer);
-      menuEntryTimer = setTimeout(() => {
-        if (!topBar.matches(":hover")) scheduleMenuClose();
-      }, 650);
-    });
-
-    // Clicking is kept only as an accessibility/touch fallback; it never toggles closed.
     hoverZone.addEventListener("click", function (event) {
       event.preventDefault();
       event.stopPropagation();
-      openSettingsMenu();
-    });
-
-    topBar.addEventListener("pointerenter", function () {
-      clearTimeout(menuEntryTimer);
-      menuEntryTimer = null;
-      cancelMenuClose();
-    });
-
-    topBar.addEventListener("pointerleave", function () {
-      scheduleMenuClose();
+      toggleSettingsMenu();
     });
 
     hoverZone.addEventListener("keydown", function (event) {
       if (event.key !== "Enter" && event.key !== " ") return;
       event.preventDefault();
-      hoverZone.click();
+      event.stopPropagation();
+      toggleSettingsMenu();
     });
+
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" && topBar.classList.contains("show")) closeSettingsMenu();
+    });
+
+    document.addEventListener("pointerdown", function (event) {
+      if (!topBar.classList.contains("show")) return;
+      if (event.target.closest("#topBar, #hoverZone")) return;
+      closeSettingsMenu();
+    }, true);
 
     document.addEventListener("pointerdown", function (event) {
       // Do not refresh every video when the user clicks directly on the gallery.
       // A double-click produces two pointerdown/click sequences before dblclick;
       // refreshing all active MP4s on both presses can briefly re-run play/audio
       // synchronization and create a crack or tiny stutter just before focus.
-      if (event.target.closest("#gallery, #multiGallery, .item, video, img")) return;
+      // The layout-add controls perform a structural UI change only. Letting their
+      // pointerdown reach this global refresh path re-mutes the active video during
+      // preloadNextMediaForFeed(), then opens its audio gate again, producing a
+      // brief crack/drop before the new layout is even created.
+      if (event.target.closest("#gallery, #multiGallery, .item, video, img, #topBar, #hoverZone, .add-layout-menu, .add-layout-side-button, .add-layout-dropdown, .add-layout-choice")) return;
       updateAllActiveMedia();
     }, { passive: true });
 
@@ -4058,6 +4792,41 @@ body.animations-disabled .feed { scroll-behavior:auto !important; }
       });
     }
 
+    function restartAutoTimerAfterUnlock(feed) {
+      // Restart only the navigation timer. Do not call updateActiveMedia here:
+      // replaying its full audio/video synchronization path on every unlock is
+      // what caused cracks and tiny interruptions when the lock was spammed.
+      if (!autoNextEnabled) return;
+
+      const activeItem = getActiveItemInFeed(feed);
+      if (!activeItem) return;
+
+      if (feed === gallery) {
+        clearAutoNextTimer();
+        autoNextTimer = createAutoTimerForItem(activeItem, () => {
+          if (isFeedLocked(gallery) || getActiveItemInFeed(gallery) !== activeItem) return;
+          scrollToNextItem(gallery);
+        });
+        return;
+      }
+
+      const actualIndex = feeds.indexOf(feed);
+      clearFeedAutoTimer(feed);
+      if (actualIndex < 0) return;
+      if (focusedFeedIndex >= 0 && mediaMode > 1) return;
+
+      const timerToken = (feedAutoTimerTokens.get(feed) || 0) + 1;
+      feedAutoTimerTokens.set(feed, timerToken);
+      feedAutoNextTimers[actualIndex] = createAutoTimerForItem(activeItem, () => {
+        if (feedAutoTimerTokens.get(feed) !== timerToken) return;
+        if (focusedFeedIndex >= 0 && mediaMode > 1) return;
+        if (isFeedLocked(feed)) return;
+        if (getActiveItemInFeed(feed) !== activeItem) return;
+        feedAutoNextTimers[actualIndex] = null;
+        scrollToNextItem(feed);
+      });
+    }
+
     function toggleLockItem(item) {
       if (!item) return;
 
@@ -4065,12 +4834,16 @@ body.animations-disabled .feed { scroll-behavior:auto !important; }
       if (!feed) return;
 
       const previous = lockedItems.get(feed);
+      const activeBeforeToggle = getActiveItemInFeed(feed);
 
       if (previous === item) {
         item.classList.remove("locked");
         lockedItems.delete(feed);
         info.textContent = "Media unlocked";
-        updateAllActiveMedia();
+
+        // Unlocking the media does not change which media is visible, so leave
+        // the playing video, its currentTime, volume and blur sync untouched.
+        restartAutoTimerAfterUnlock(feed);
         return;
       }
 
@@ -4097,13 +4870,22 @@ body.animations-disabled .feed { scroll-behavior:auto !important; }
           silenceVideoImmediately(video, false);
         }
       });
-      feed.scrollTop = getItemSnapTop(feed, item);
 
-      if (feed === gallery) {
-        updateActiveMedia();
-      } else {
-        const index = feeds.indexOf(feed);
-        if (index >= 0) updateActiveMediaForFeed(feed, index);
+      const targetTop = getItemSnapTop(feed, item);
+      if (Math.abs(feed.scrollTop - targetTop) > 0.75) {
+        feed.scrollTop = targetTop;
+      }
+
+      // Clicking Lock on the media that is already playing is now a pure state
+      // change. Only run the heavy media switch path when locking a genuinely
+      // different item.
+      if (activeBeforeToggle !== item) {
+        if (feed === gallery) {
+          updateActiveMedia();
+        } else {
+          const index = feeds.indexOf(feed);
+          if (index >= 0) updateActiveMediaForFeed(feed, index);
+        }
       }
     }
 
@@ -4695,7 +5477,13 @@ body.animations-disabled .feed { scroll-behavior:auto !important; }
         // (i.e. the dblclick) lands, so it never engages. Controls are
         // restored a little after the OS double-click window closes, as
         // long as the mouse is still hovering.
-        container.addEventListener("mousedown", () => {
+        container.addEventListener("mousedown", event => {
+          // Media-overlay buttons are independent controls. Clicking Lock,
+          // Speed, Order, Filter or Close must not repeatedly remove/restore
+          // the video's native controls, which can also disturb audio on some
+          // browsers when clicked very quickly.
+          if (event.target.closest("button, input, select, label")) return;
+
           element.controls = false;
           clearTimeout(container._controlsRestoreTimer);
           container._controlsRestoreTimer = setTimeout(() => {
@@ -4789,8 +5577,21 @@ body.animations-disabled .feed { scroll-behavior:auto !important; }
         event.stopPropagation();
         clearTimeout(lockHoverTimer);
         toggleLockItem(container);
+
         const locked = container.classList.contains("locked");
-        container.classList.toggle("lock-control-visible", locked);
+
+        // Unlocking used to immediately remove lock-control-visible. On an added
+        // layout the pointer was still over the media, so no new mouseenter event
+        // occurred and the entire layout toolbar stayed hidden until the pointer
+        // left and entered again. Keep it visible while hovered, keyboard-focused,
+        // or on a touch/coarse-pointer device.
+        const shouldKeepControlsVisible =
+          locked ||
+          container.matches(":hover") ||
+          container.matches(":focus-within") ||
+          window.matchMedia("(pointer: coarse)").matches;
+
+        container.classList.toggle("lock-control-visible", shouldKeepControlsVisible);
         lockButton.setAttribute("aria-label", locked ? "Unlock this media" : "Lock this media");
         lockButton.title = locked ? "Unlock this media" : "Lock this media";
       });
@@ -5388,6 +6189,67 @@ body.animations-disabled .feed { scroll-behavior:auto !important; }
       multiGallery.querySelectorAll(".feed-resizer").forEach(handle => handle.remove());
     }
 
+    function applyResponsiveFeedRatios(activeFeeds, requestedRatios) {
+      if (!Array.isArray(activeFeeds) || !activeFeeds.length) return;
+
+      const handleSpace = Math.max(0, activeFeeds.length - 1) * getLayoutHandleWidth();
+      const rawRatios = activeFeeds.map((_, index) => {
+        const value = Number(requestedRatios?.[index]);
+        return Number.isFinite(value) && value > 0 ? value : 0;
+      });
+      const rawTotal = rawRatios.reduce((sum, value) => sum + value, 0);
+      const normalized = rawTotal > 0
+        ? rawRatios.map(value => value / rawTotal)
+        : activeFeeds.map(() => 1 / activeFeeds.length);
+
+      activeFeeds.forEach((feed, index) => {
+        const ratio = normalized[index];
+        const percentage = Math.max(0, ratio * 100);
+        const handleDeduction = Math.max(0, ratio * handleSpace);
+
+        feed.dataset.layoutRatio = String(ratio);
+        feed.style.width = "auto";
+        feed.style.flexGrow = "0";
+        feed.style.flexShrink = "0";
+
+        // The percentages add up to 100%, while the proportional pixel
+        // deductions add up to the exact separator width. Because this remains a
+        // CSS expression instead of a frozen pixel value, every layout follows
+        // browser zoom as smoothly as the original single-layout view.
+        feed.style.flexBasis = `calc(${percentage.toFixed(8)}% - ${handleDeduction.toFixed(4)}px)`;
+      });
+    }
+
+    function getCurrentResponsiveFeedRatios(activeFeeds = getActiveFeeds()) {
+      if (!activeFeeds.length) return [];
+
+      const widths = activeFeeds.map(feed => {
+        const width = feed.getBoundingClientRect().width;
+        return Number.isFinite(width) && width > 0 ? width : 0;
+      });
+      const total = widths.reduce((sum, width) => sum + width, 0);
+
+      if (total > 0.5) return widths.map(width => width / total);
+
+      const stored = activeFeeds.map(feed => Number(feed.dataset.layoutRatio));
+      const storedTotal = stored.reduce(
+        (sum, ratio) => sum + (Number.isFinite(ratio) && ratio > 0 ? ratio : 0),
+        0
+      );
+      if (storedTotal > 0) {
+        return stored.map(ratio =>
+          Number.isFinite(ratio) && ratio > 0 ? ratio / storedTotal : 0
+        );
+      }
+
+      return activeFeeds.map(() => 1 / activeFeeds.length);
+    }
+
+    function makeCurrentFeedWidthsResponsive(activeFeeds = getActiveFeeds()) {
+      if (!activeFeeds.length) return;
+      applyResponsiveFeedRatios(activeFeeds, getCurrentResponsiveFeedRatios(activeFeeds));
+    }
+
     function applyReorderedFeedWidths(movedFeed, preservedWidths) {
       const activeFeeds = getActiveFeeds();
       if (!activeFeeds.length) return;
@@ -5436,26 +6298,30 @@ body.animations-disabled .feed { scroll-behavior:auto !important; }
         });
       }
 
-      activeFeeds.forEach(activeFeed => {
-        const width = activeFeed === movedFeed ? movedWidth : widths[otherFeeds.indexOf(activeFeed)];
-        activeFeed.style.width = width + "px";
-        activeFeed.style.flex = `0 0 ${width}px`;
-      });
+      const reorderedWidths = activeFeeds.map(activeFeed =>
+        activeFeed === movedFeed
+          ? movedWidth
+          : widths[otherFeeds.indexOf(activeFeed)]
+      );
+      const reorderedTotal = reorderedWidths.reduce((total, width) => total + width, 0);
+      const reorderedRatios = reorderedTotal > 0
+        ? reorderedWidths.map(width => width / reorderedTotal)
+        : activeFeeds.map(() => 1 / activeFeeds.length);
+
+      applyResponsiveFeedRatios(activeFeeds, reorderedRatios);
     }
 
     function setEqualFeedWidths() {
       const activeFeeds = getActiveFeeds();
       if (!activeFeeds.length) return;
-      const handleSpace = Math.max(0, activeFeeds.length - 1) * getLayoutHandleWidth();
-      const available = Math.max(0, multiGallery.clientWidth - handleSpace);
-      const equalWidth = available / activeFeeds.length;
-      activeFeeds.forEach(feed => {
-        feed.style.width = "auto";
-        feed.style.flexGrow = "0";
-        feed.style.flexShrink = "0";
-        feed.style.flexBasis = equalWidth + "px";
-      });
+
+      applyResponsiveFeedRatios(
+        activeFeeds,
+        activeFeeds.map(() => 1 / activeFeeds.length)
+      );
+
       feeds.slice(mediaMode).forEach(feed => {
+        delete feed.dataset.layoutRatio;
         feed.style.width = "";
         feed.style.flex = "";
       });
@@ -5625,6 +6491,11 @@ body.animations-disabled .feed { scroll-behavior:auto !important; }
               feed.classList.toggle("focused-feed", index === focusedFeedIndex);
             });
             multiGallery.classList.add("focused-layout");
+          } else {
+            // Preserve the exact manual proportions, but stop storing them as
+            // absolute pixels. The resulting calc() flex-basis values respond
+            // naturally to later browser zoom changes.
+            makeCurrentFeedWidthsResponsive(getActiveFeeds());
           }
 
           // ResizeObserver may report an intermediate width while the lightweight
@@ -5908,11 +6779,19 @@ body.animations-disabled .feed { scroll-behavior:auto !important; }
         const sourceLibrary = lastOpenedFolderFiles.length ? lastOpenedFolderFiles : files;
         feedLibraries.set(newFeed, [...sourceLibrary]);
         feedFilteredLibraries.set(newFeed, quickLibrary);
+
+        // Keep the layout's visible filter control synchronized with the quick-add
+        // choice. Previously the media library was filtered correctly, but the
+        // button still fell back to "Everything" because no per-feed mode was saved.
+        feedFilterModes.set(newFeed, quickFilter);
+
         newFeed.dataset.folderName = lastOpenedFolderName || gallery.dataset.folderName || "Folder";
       } else {
-        // A normal layout inherits the current global library unless it already owns one.
+        // A normal layout starts in Everything mode. Clear any state retained by
+        // a hidden/reused feed so its button and media library cannot disagree.
         feedLibraries.delete(newFeed);
         feedFilteredLibraries.delete(newFeed);
+        feedFilterModes.delete(newFeed);
       }
 
       // Prepare the new layout's own order before any media item is created.
@@ -6001,16 +6880,34 @@ body.animations-disabled .feed { scroll-behavior:auto !important; }
           newFeed.classList.add("layout-entering-active");
 
           window.setTimeout(() => {
-          activeFeeds.forEach(feed => { feed.style.transition = ""; });
-          newFeed.classList.remove("layout-entering", "layout-entering-active");
-          // Initialize only the newly added layout. Existing layouts are deliberately
-          // not synchronized or recentered here.
+            activeFeeds.forEach(feed => { feed.style.transition = ""; });
+            newFeed.classList.remove("layout-entering", "layout-entering-active");
+
+            // The entrance animation uses concrete pixel endpoints. Replace
+            // those endpoints with mathematically identical responsive ratios
+            // only after the animation has settled, so browser zoom never has
+            // stale pixel widths to fight against.
+            applyResponsiveFeedRatios(
+              activeFeeds,
+              activeFeeds.map(() => 1 / activeFeeds.length)
+            );
+
+            // Initialize only the newly added layout. Existing layouts are deliberately
+            // not synchronized or recentered here.
             const newIndex = feeds.indexOf(newFeed);
             if (newIndex >= 0) ensureNewLayoutHasMedia(newFeed, newIndex);
           }, animationsEnabled ? 340 : 0);
         });
       });
     }
+
+    // Layout-add interactions must remain playback-neutral from pointerdown
+    // through click. The actual add handlers below initialize only the new feed.
+    document.querySelectorAll(".add-layout-menu").forEach(menu => {
+      menu.addEventListener("pointerdown", event => {
+        event.stopPropagation();
+      });
+    });
 
     // Clicking the + button keeps the original quick-add behavior.
     // Hovering still exposes Latest / Oldest as optional choices.
@@ -7075,10 +7972,15 @@ body.animations-disabled .feed { scroll-behavior:auto !important; }
       // Clicking or double-clicking media must not re-run play/mute/volume
       // synchronization. The focus animation is visual only, so preserving the
       // current video element and its audio state avoids a brief crack/pop.
-      if (event.target.closest("#gallery, #multiGallery")) return;
+      if (event.target.closest("#gallery, #multiGallery, #topBar, #hoverZone, .add-layout-menu, .add-layout-side-button, .add-layout-dropdown, .add-layout-choice")) return;
       updateAllActiveMedia();
     });
     document.addEventListener("keydown", function (event) {
+      // Control-center keyboard interaction must never navigate the media feed
+      // or restart playback/audio synchronization.
+      if (event.target instanceof Element &&
+          event.target.closest("#topBar, #hoverZone, button, input, select, label")) return;
+
       if (event.key === "ArrowDown" || event.key === "PageDown" || event.key === " ") {
         event.preventDefault();
         if (pipEnabled) pipScrollNext();
@@ -9441,5 +10343,2075 @@ loadServerFiles();
     transform:scale(.96) !important;
   }
 </style>
+
+<script id="x-profile-control-center-script">
+(() => {
+  const grid = document.querySelector('.settings-grid');
+  const zones = {
+    setup: document.querySelector('.setup-zone'),
+    play: document.querySelector('.play-zone'),
+    look: document.querySelector('.look-zone'),
+    tools: document.querySelector('.tools-zone')
+  };
+  const labels = {
+    all: 'All controls',
+    setup: 'Source & layout',
+    play: 'Playback',
+    look: 'Appearance',
+    tools: 'Extra tools'
+  };
+  const tabs = Array.from(document.querySelectorAll('.settings-tab[data-settings-view]'));
+  const viewItems = Array.from(document.querySelectorAll('#settingsViewMenu [data-settings-view]'));
+  const viewButton = document.getElementById('settingsViewBtn');
+  const viewLabel = document.getElementById('settingsViewLabel');
+  const viewMenu = document.getElementById('settingsViewMenu');
+  const closeButton = document.getElementById('settingsCloseBtn');
+
+  function closeViewMenu() {
+    viewMenu?.classList.remove('open');
+    viewButton?.setAttribute('aria-expanded', 'false');
+  }
+
+  function setSettingsView(view) {
+    const validView = view === 'all' || Object.prototype.hasOwnProperty.call(zones, view) ? view : 'all';
+    Object.entries(zones).forEach(([key, zone]) => {
+      zone?.classList.toggle('view-hidden', validView !== 'all' && key !== validView);
+    });
+    grid?.classList.toggle('single-view', validView !== 'all');
+    tabs.forEach(tab => {
+      const active = tab.dataset.settingsView === validView;
+      tab.classList.toggle('active', active);
+      tab.setAttribute('aria-pressed', String(active));
+    });
+    if (viewLabel) viewLabel.textContent = labels[validView];
+    closeViewMenu();
+    try { localStorage.setItem('vertical_media_player_settings_view', validView); } catch (_) {}
+  }
+
+  tabs.forEach(tab => tab.addEventListener('click', () => setSettingsView(tab.dataset.settingsView)));
+  viewItems.forEach(item => item.addEventListener('click', () => setSettingsView(item.dataset.settingsView)));
+
+  viewButton?.addEventListener('click', event => {
+    event.stopPropagation();
+    const open = !viewMenu.classList.contains('open');
+    viewMenu.classList.toggle('open', open);
+    viewButton.setAttribute('aria-expanded', String(open));
+  });
+
+  closeButton?.addEventListener('click', () => {
+    closeViewMenu();
+    if (typeof closeSettingsMenu === 'function') closeSettingsMenu();
+  });
+
+  document.addEventListener('pointerdown', event => {
+    if (!event.target.closest('.settings-view-picker')) closeViewMenu();
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') closeViewMenu();
+  });
+
+  let savedView = 'all';
+  try { savedView = localStorage.getItem('vertical_media_player_settings_view') || 'all'; } catch (_) {}
+  setSettingsView(savedView);
+})();
+</script>
+
+
+<style id="complete-mobile-responsive-overhaul">
+  /*
+    Complete phone/tablet usability layer.
+    Desktop styling and media behavior remain unchanged.
+  */
+  @media (max-width: 840px), (pointer: coarse) and (max-width: 1100px) {
+    :root {
+      --mobile-app-height: 100dvh;
+      --mobile-safe-top: max(8px, env(safe-area-inset-top));
+      --mobile-safe-right: max(8px, env(safe-area-inset-right));
+      --mobile-safe-bottom: max(8px, env(safe-area-inset-bottom));
+      --mobile-safe-left: max(8px, env(safe-area-inset-left));
+    }
+
+    html {
+      width:100%;
+      height:100%;
+      overflow:hidden;
+      background:#000;
+    }
+
+    body {
+      width:100%;
+      min-width:0;
+      height:var(--mobile-app-height);
+      min-height:var(--mobile-app-height);
+      overflow:hidden !important;
+      touch-action:manipulation !important;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    button,
+    select,
+    input,
+    label {
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    /* Prevent the media layer from receiving accidental gestures while the menu is open. */
+    body.control-center-open #gallery,
+    body.control-center-open #multiGallery,
+    body.control-center-open .add-layout-menu {
+      pointer-events:none !important;
+    }
+
+    /* Stable full-height media viewport, including when the mobile browser UI changes size. */
+    #gallery,
+    #multiGallery,
+    .feed,
+    .item,
+    img,
+    video {
+      height:var(--mobile-app-height) !important;
+      min-height:var(--mobile-app-height) !important;
+    }
+
+    #gallery,
+    .feed {
+      overscroll-behavior-y:contain !important;
+      touch-action:pan-x pan-y !important;
+      scroll-behavior:smooth;
+    }
+
+    /* On phones, multiple layouts become a full-width horizontal snap carousel.
+       Vertical swipes still change media inside the active layout. */
+    #multiGallery {
+      width:100vw !important;
+      max-width:100vw !important;
+      display:flex;
+      align-items:stretch;
+      overflow-x:auto !important;
+      overflow-y:hidden !important;
+      scroll-snap-type:x mandatory;
+      scroll-padding-inline:0;
+      scrollbar-width:none;
+      -ms-overflow-style:none;
+      overscroll-behavior-x:contain;
+      touch-action:pan-x pan-y !important;
+      -webkit-overflow-scrolling:touch;
+    }
+
+    #multiGallery::-webkit-scrollbar { display:none; }
+
+    #multiGallery .feed,
+    #multiGallery[class*="mode-"] .feed {
+      flex:0 0 100vw !important;
+      width:100vw !important;
+      min-width:100vw !important;
+      max-width:100vw !important;
+      border-right:0 !important;
+      scroll-snap-align:start;
+      scroll-snap-stop:always;
+    }
+
+    #multiGallery .feed-resizer {
+      display:none !important;
+      width:0 !important;
+      flex-basis:0 !important;
+    }
+
+    /* Control-center trigger: large enough for touch without covering the media controls. */
+    #hoverZone {
+      top:var(--mobile-safe-top) !important;
+      bottom:auto !important;
+      left:50% !important;
+      right:auto !important;
+      min-width:176px !important;
+      width:auto !important;
+      height:46px !important;
+      padding:0 18px !important;
+      border-width:1px !important;
+      transform:translateX(-50%) !important;
+      z-index:2147483646 !important;
+    }
+
+    #hoverZone:hover,
+    #hoverZone:active,
+    #hoverZone[aria-expanded="true"] {
+      transform:translateX(-50%) !important;
+    }
+
+    #hoverZone .open-menu-label {
+      font-size:14px !important;
+      white-space:nowrap;
+    }
+
+    /* Full-screen mobile control center with a separately scrollable content area. */
+    #topBar {
+      inset:0 !important;
+      top:0 !important;
+      left:0 !important;
+      right:0 !important;
+      bottom:0 !important;
+      width:100vw !important;
+      height:var(--mobile-app-height) !important;
+      min-height:var(--mobile-app-height) !important;
+      padding:
+        var(--mobile-safe-top)
+        var(--mobile-safe-right)
+        var(--mobile-safe-bottom)
+        var(--mobile-safe-left) !important;
+      align-items:stretch !important;
+      justify-content:stretch !important;
+      background:rgba(0,0,0,.72) !important;
+      overflow:hidden !important;
+    }
+
+    #topBar.show {
+      animation:mobile-control-center-in .18s cubic-bezier(.2,.8,.2,1) both !important;
+    }
+
+    @keyframes mobile-control-center-in {
+      from { opacity:0; transform:translateY(14px); }
+      to { opacity:1; transform:translateY(0); }
+    }
+
+    #leftControls.toolbar-shell {
+      display:flex !important;
+      flex-direction:column !important;
+      width:100% !important;
+      max-width:none !important;
+      height:100% !important;
+      max-height:none !important;
+      min-height:0 !important;
+      margin:0 !important;
+      padding:0 !important;
+      overflow:hidden !important;
+      border-radius:22px !important;
+      background:#000 !important;
+      box-shadow:0 20px 70px rgba(0,0,0,.72) !important;
+      contain:layout paint;
+    }
+
+    .settings-header {
+      position:relative !important;
+      top:auto !important;
+      z-index:40 !important;
+      flex:0 0 auto !important;
+      display:grid !important;
+      grid-template-columns:minmax(0,1fr) !important;
+      gap:12px !important;
+      width:100% !important;
+      padding:16px 14px 12px !important;
+      background:#000 !important;
+      border-bottom:1px solid #202327 !important;
+    }
+
+    .settings-heading-copy {
+      min-width:0;
+    }
+
+    .settings-eyebrow {
+      font-size:9px !important;
+    }
+
+    .settings-header h1 {
+      margin:3px 0 2px !important;
+      font-size:clamp(24px, 7vw, 30px) !important;
+      line-height:1.05 !important;
+    }
+
+    .settings-header p {
+      max-width:38ch;
+      font-size:12px !important;
+      line-height:1.35;
+    }
+
+    .settings-header-actions {
+      display:grid !important;
+      grid-template-columns:minmax(0,1fr) auto !important;
+      width:100% !important;
+      gap:8px !important;
+    }
+
+    .settings-view-picker {
+      min-width:0;
+      width:100%;
+    }
+
+    .settings-header-action,
+    #settingsCloseBtn {
+      width:100% !important;
+      min-width:0 !important;
+      height:48px !important;
+      min-height:48px !important;
+      padding:0 16px !important;
+      font-size:14px !important;
+    }
+
+    #settingsCloseBtn {
+      width:auto !important;
+      min-width:92px !important;
+    }
+
+    .settings-view-menu {
+      position:fixed !important;
+      top:calc(var(--mobile-safe-top) + 132px) !important;
+      left:calc(var(--mobile-safe-left) + 12px) !important;
+      right:calc(var(--mobile-safe-right) + 12px) !important;
+      width:auto !important;
+      max-width:none !important;
+      max-height:calc(var(--mobile-app-height) - 166px - var(--mobile-safe-bottom)) !important;
+      overflow-y:auto !important;
+      padding:8px !important;
+      border-radius:22px !important;
+      -webkit-overflow-scrolling:touch;
+      touch-action:pan-y !important;
+    }
+
+    .settings-view-menu button {
+      height:54px !important;
+      min-height:54px !important;
+      grid-template-columns:38px 1fr !important;
+      font-size:16px !important;
+    }
+
+    /* Navigation remains visible while only the settings content scrolls. */
+    .settings-tabs {
+      position:relative !important;
+      top:auto !important;
+      z-index:30 !important;
+      flex:0 0 auto !important;
+      display:flex !important;
+      grid-template-columns:none !important;
+      width:100% !important;
+      min-height:60px !important;
+      margin:0 !important;
+      padding:0 6px !important;
+      overflow-x:auto !important;
+      overflow-y:hidden !important;
+      border-bottom:1px solid #202327 !important;
+      background:#000 !important;
+      scroll-snap-type:x proximity;
+      scrollbar-width:none;
+      -webkit-overflow-scrolling:touch;
+      touch-action:pan-x !important;
+    }
+
+    .settings-tabs::-webkit-scrollbar { display:none; }
+
+    .settings-tab {
+      flex:0 0 92px !important;
+      width:92px !important;
+      height:60px !important;
+      min-height:60px !important;
+      padding:0 7px !important;
+      gap:5px !important;
+      font-size:11px !important;
+      scroll-snap-align:center;
+    }
+
+    .settings-tab svg {
+      width:20px !important;
+      height:20px !important;
+    }
+
+    .settings-tab.active::after {
+      left:14px !important;
+      right:14px !important;
+      height:3px !important;
+    }
+
+    .settings-grid,
+    .settings-grid.single-view {
+      flex:1 1 auto !important;
+      min-height:0 !important;
+      width:100% !important;
+      display:grid !important;
+      grid-template-columns:minmax(0,1fr) !important;
+      align-content:start !important;
+      gap:12px !important;
+      margin:0 !important;
+      padding:12px 10px calc(24px + var(--mobile-safe-bottom)) !important;
+      overflow-x:hidden !important;
+      overflow-y:auto !important;
+      overscroll-behavior-y:contain;
+      scroll-behavior:smooth;
+      scrollbar-width:thin;
+      -webkit-overflow-scrolling:touch;
+      touch-action:pan-y !important;
+    }
+
+    .settings-zone {
+      width:100% !important;
+      min-width:0 !important;
+      margin:0 !important;
+      padding:0 12px 12px !important;
+      border-radius:20px !important;
+    }
+
+    .zone-heading {
+      min-height:54px !important;
+      padding:10px 2px 6px !important;
+    }
+
+    .zone-heading h2 {
+      font-size:15px !important;
+    }
+
+    .zone-heading p {
+      font-size:10px !important;
+    }
+
+    .zone-icon {
+      width:30px !important;
+      height:30px !important;
+      flex-basis:30px !important;
+    }
+
+    .settings-zone .control-group,
+    .settings-zone .timing-group,
+    .settings-zone .scroll-group,
+    .settings-zone .start-group,
+    .settings-zone .appearance-group,
+    .settings-zone .playback-group,
+    .settings-zone .display-group,
+    .settings-zone .file-group {
+      width:100% !important;
+      min-width:0 !important;
+      grid-template-columns:minmax(0,1fr) !important;
+      gap:10px !important;
+      padding:12px !important;
+      border-radius:17px !important;
+    }
+
+    .settings-zone .control-group > *,
+    .settings-zone .field-span-all,
+    .settings-zone .field-span-2 {
+      grid-column:1 / -1 !important;
+      min-width:0;
+    }
+
+    .group-heading {
+      padding-bottom:8px !important;
+    }
+
+    .group-heading .group-label {
+      font-size:14px !important;
+    }
+
+    .group-heading small {
+      font-size:11px !important;
+      line-height:1.35 !important;
+    }
+
+    /* Comfortable touch targets and no automatic iOS text zoom. */
+    .settings-zone button,
+    .settings-zone select,
+    .settings-zone .file-button,
+    .settings-zone input[type=number],
+    .settings-zone input[type=color] {
+      width:100% !important;
+      min-width:0 !important;
+      height:48px !important;
+      min-height:48px !important;
+      padding-left:16px !important;
+      padding-right:16px !important;
+      font-size:16px !important;
+      line-height:1.2 !important;
+    }
+
+    .settings-zone .primary-action,
+    .settings-zone #openFolderBtn,
+    .settings-zone #openNewFolderBtn,
+    .settings-zone #pipBtn {
+      height:52px !important;
+      min-height:52px !important;
+      font-size:16px !important;
+    }
+
+    .field-stack,
+    .compact-fields label {
+      width:100%;
+      min-width:0;
+      gap:7px !important;
+    }
+
+    .field-stack > span,
+    .compact-fields label > span {
+      font-size:11px !important;
+    }
+
+    .input-unit {
+      grid-template-columns:minmax(0,1fr) auto !important;
+      gap:8px !important;
+    }
+
+    .input-unit small {
+      min-width:28px;
+      font-size:11px !important;
+    }
+
+    .slider-row,
+    .appearance-color-row {
+      grid-template-columns:minmax(0,1fr) 62px !important;
+      gap:10px !important;
+    }
+
+    .playback-volume {
+      padding:12px !important;
+      border-radius:17px !important;
+    }
+
+    .appearance-value,
+    #volumeText,
+    .slider-row #layoutRadiusText {
+      width:62px !important;
+      min-width:62px !important;
+      height:42px !important;
+      min-height:42px !important;
+      font-size:11px !important;
+    }
+
+    #backgroundColorPicker {
+      width:62px !important;
+      min-width:62px !important;
+      height:48px !important;
+    }
+
+    input[type=range],
+    .timing-field .duration-slider,
+    #imageDurationSlider,
+    #gifDurationSlider,
+    #videoDurationSlider {
+      width:100% !important;
+      min-height:44px !important;
+      height:44px !important;
+      margin:0 !important;
+      touch-action:pan-x !important;
+    }
+
+    input[type=range]::-webkit-slider-runnable-track,
+    #imageDurationSlider::-webkit-slider-runnable-track,
+    #gifDurationSlider::-webkit-slider-runnable-track,
+    #videoDurationSlider::-webkit-slider-runnable-track {
+      height:9px !important;
+    }
+
+    input[type=range]::-webkit-slider-thumb,
+    #imageDurationSlider::-webkit-slider-thumb,
+    #gifDurationSlider::-webkit-slider-thumb,
+    #videoDurationSlider::-webkit-slider-thumb {
+      width:28px !important;
+      height:28px !important;
+      margin-top:-9.5px !important;
+    }
+
+    input[type=range]::-moz-range-track,
+    input[type=range]::-moz-range-progress {
+      height:9px !important;
+    }
+
+    input[type=range]::-moz-range-thumb {
+      width:28px !important;
+      height:28px !important;
+    }
+
+    .section-help {
+      padding:9px 10px !important;
+      font-size:11px !important;
+      line-height:1.4 !important;
+    }
+
+    /* Startup page: readable, scrollable and reachable with one thumb. */
+    #startupScreen {
+      width:100vw !important;
+      height:var(--mobile-app-height) !important;
+      min-height:var(--mobile-app-height) !important;
+      padding:
+        calc(var(--mobile-safe-top) + 22px)
+        calc(var(--mobile-safe-right) + 14px)
+        calc(var(--mobile-safe-bottom) + 18px)
+        calc(var(--mobile-safe-left) + 14px) !important;
+      justify-content:flex-start !important;
+      gap:16px !important;
+      overflow-y:auto !important;
+      overscroll-behavior-y:contain;
+      -webkit-overflow-scrolling:touch;
+      touch-action:pan-y !important;
+    }
+
+    #startupTitle {
+      width:100%;
+      margin-top:4px !important;
+      font-size:clamp(31px, 11vw, 54px) !important;
+      line-height:.98 !important;
+      text-align:center;
+      overflow-wrap:anywhere;
+    }
+
+    #startupFeatures {
+      width:100% !important;
+      max-width:680px !important;
+    }
+
+    #startupFeaturesIntro {
+      font-size:15px !important;
+      line-height:1.45 !important;
+    }
+
+    #startupFeatureList {
+      width:100%;
+      grid-template-columns:minmax(0,1fr) !important;
+      gap:7px !important;
+      margin:0 !important;
+      padding:0 !important;
+    }
+
+    #startupFeatureList li {
+      width:100%;
+      min-height:42px;
+      padding:10px 12px !important;
+      border-radius:15px !important;
+      font-size:12px !important;
+      line-height:1.35 !important;
+      white-space:normal !important;
+    }
+
+    #startupOpenFolder {
+      flex:0 0 auto;
+      width:100% !important;
+      max-width:680px !important;
+      height:62px !important;
+      min-height:62px !important;
+      margin-top:auto !important;
+      padding:0 22px !important;
+      border-radius:999px !important;
+      font-size:17px !important;
+      position:sticky;
+      bottom:0;
+      z-index:4;
+    }
+
+    /* Floating layout controls become a bottom, horizontally scrollable toolbar.
+       This prevents long labels from overflowing narrow screens. */
+    #gallery .item > .layout-controls-group,
+    #multiGallery .item > .layout-controls-group,
+    body.single-layout-mode #gallery .item > .layout-controls-group {
+      position:absolute !important;
+      top:auto !important;
+      left:12px !important;
+      right:12px !important;
+      bottom:calc(12px + env(safe-area-inset-bottom)) !important;
+      width:auto !important;
+      max-width:calc(100% - 24px) !important;
+      min-height:56px !important;
+      display:flex !important;
+      flex-direction:row !important;
+      flex-wrap:nowrap !important;
+      justify-content:flex-start !important;
+      align-items:center !important;
+      gap:7px !important;
+      padding:6px !important;
+      overflow-x:auto !important;
+      overflow-y:hidden !important;
+      border:1px solid rgba(255,255,255,.18);
+      border-radius:999px !important;
+      background:rgba(0,0,0,.84);
+      box-shadow:0 10px 30px rgba(0,0,0,.48);
+      opacity:1 !important;
+      visibility:visible !important;
+      pointer-events:auto !important;
+      transform:none !important;
+      scrollbar-width:none;
+      -webkit-overflow-scrolling:touch;
+      touch-action:pan-x !important;
+    }
+
+    #gallery .item > .layout-controls-group::-webkit-scrollbar,
+    #multiGallery .item > .layout-controls-group::-webkit-scrollbar {
+      display:none;
+    }
+
+    #gallery .item > .layout-controls-group > button,
+    #multiGallery .item > .layout-controls-group > button {
+      position:relative !important;
+      inset:auto !important;
+      flex:0 0 auto !important;
+      min-height:44px !important;
+      height:44px !important;
+      margin:0 !important;
+      opacity:1 !important;
+      visibility:visible !important;
+      pointer-events:auto !important;
+      transform:none !important;
+      white-space:nowrap;
+    }
+
+    #gallery .layout-controls-group > .layout-filter-button,
+    #gallery .layout-controls-group > .layout-order-button,
+    #multiGallery .layout-controls-group > .layout-filter-button,
+    #multiGallery .layout-controls-group > .layout-order-button {
+      width:auto !important;
+      min-width:max-content !important;
+      padding:0 14px !important;
+      font-size:12px !important;
+    }
+
+    #gallery .layout-controls-group > .layout-speed-button,
+    #gallery .layout-controls-group > .media-lock-button,
+    #gallery .layout-controls-group > .layout-close-button,
+    #multiGallery .layout-controls-group > .layout-speed-button,
+    #multiGallery .layout-controls-group > .media-lock-button,
+    #multiGallery .layout-controls-group > .layout-close-button {
+      width:44px !important;
+      min-width:44px !important;
+      max-width:44px !important;
+      flex-basis:44px !important;
+    }
+
+    /* Keep information overlays clear of the new bottom toolbar and top trigger. */
+    .media-info-overlay {
+      left:12px !important;
+      right:12px !important;
+      bottom:calc(82px + env(safe-area-inset-bottom)) !important;
+      max-width:calc(100% - 24px) !important;
+      font-size:10px !important;
+    }
+
+    .media-fps-counter {
+      top:calc(66px + env(safe-area-inset-top)) !important;
+      left:12px !important;
+    }
+
+    #gallery::before,
+    .feed::before {
+      top:calc(62px + env(safe-area-inset-top)) !important;
+      max-width:calc(100% - 24px) !important;
+    }
+
+    .media-name {
+      max-width:calc(100% - 32px) !important;
+      padding:9px 12px !important;
+      font-size:clamp(13px, 4vw, 18px) !important;
+    }
+
+    /* Add-layout actions remain reachable and open upward inside the viewport. */
+    #addLayoutLeftMenu,
+    #addLayoutRightMenu {
+      top:auto !important;
+      bottom:calc(12px + env(safe-area-inset-bottom)) !important;
+      z-index:2147483644 !important;
+    }
+
+    #addLayoutLeftMenu {
+      left:calc(10px + env(safe-area-inset-left)) !important;
+      right:auto !important;
+    }
+
+    #addLayoutRightMenu {
+      right:calc(10px + env(safe-area-inset-right)) !important;
+      left:auto !important;
+    }
+
+    .add-layout-side-button {
+      width:48px !important;
+      height:48px !important;
+      min-width:48px !important;
+      min-height:48px !important;
+    }
+
+    .add-layout-dropdown {
+      position:absolute !important;
+      top:auto !important;
+      bottom:calc(100% + 8px) !important;
+      width:min(300px, calc(100vw - 24px)) !important;
+      max-height:min(62dvh, 520px) !important;
+      overflow-y:auto !important;
+      -webkit-overflow-scrolling:touch;
+      touch-action:pan-y !important;
+    }
+
+    #addLayoutLeftMenu .add-layout-dropdown {
+      left:0 !important;
+      right:auto !important;
+    }
+
+    #addLayoutRightMenu .add-layout-dropdown {
+      right:0 !important;
+      left:auto !important;
+    }
+
+    .add-layout-choice {
+      min-height:56px !important;
+      height:auto !important;
+      padding:10px 14px !important;
+      font-size:15px !important;
+    }
+
+    /* Disable hover-only visual movement on touch screens. */
+    button:hover,
+    .file-button:hover,
+    #hoverZone:hover,
+    .settings-tab:hover {
+      transform:none !important;
+    }
+  }
+
+  /* Slightly wider tablets can keep paired controls while retaining touch sizing. */
+  @media (min-width: 600px) and (max-width: 840px) and (orientation: portrait) {
+    .settings-zone .control-group:not(.timing-group):not(.start-group) {
+      grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    }
+
+    .settings-zone .control-group:not(.timing-group):not(.start-group) > .group-heading,
+    .settings-zone .control-group:not(.timing-group):not(.start-group) > .field-span-all,
+    .settings-zone .control-group:not(.timing-group):not(.start-group) > .field-span-2,
+    .settings-zone .control-group:not(.timing-group):not(.start-group) > .slider-row,
+    .settings-zone .control-group:not(.timing-group):not(.start-group) > .appearance-color-row,
+    .settings-zone .control-group:not(.timing-group):not(.start-group) > .section-help {
+      grid-column:1 / -1 !important;
+    }
+
+    #startupFeatureList {
+      grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    }
+  }
+
+  /* Compact landscape phones: reserve more height for the actual controls. */
+  @media (max-width: 920px) and (max-height: 560px) and (orientation: landscape) {
+    #hoverZone {
+      min-width:156px !important;
+      height:42px !important;
+    }
+
+    .settings-header {
+      grid-template-columns:minmax(0,1fr) auto !important;
+      align-items:center !important;
+      padding:10px 12px !important;
+    }
+
+    .settings-header p,
+    .settings-eyebrow {
+      display:none !important;
+    }
+
+    .settings-header h1 {
+      margin:0 !important;
+      font-size:22px !important;
+    }
+
+    .settings-header-actions {
+      width:auto !important;
+      grid-template-columns:170px 84px !important;
+    }
+
+    .settings-header-action,
+    #settingsCloseBtn {
+      height:42px !important;
+      min-height:42px !important;
+      font-size:13px !important;
+    }
+
+    .settings-tabs {
+      min-height:52px !important;
+    }
+
+    .settings-tab {
+      height:52px !important;
+      min-height:52px !important;
+    }
+
+    .settings-grid {
+      padding-top:8px !important;
+    }
+
+    #startupScreen {
+      display:grid !important;
+      grid-template-columns:minmax(220px,.8fr) minmax(320px,1.2fr) !important;
+      grid-template-rows:auto 1fr auto !important;
+      align-items:center !important;
+      gap:10px 18px !important;
+    }
+
+    #startupTitle {
+      grid-column:1;
+      grid-row:1 / span 2;
+      text-align:left;
+      font-size:clamp(34px, 8vw, 58px) !important;
+    }
+
+    #startupFeatures {
+      grid-column:2;
+      grid-row:1 / span 2;
+      max-height:calc(var(--mobile-app-height) - 86px);
+      overflow-y:auto;
+    }
+
+    #startupOpenFolder {
+      grid-column:1 / -1;
+      grid-row:3;
+      height:52px !important;
+      min-height:52px !important;
+    }
+  }
+
+  @media (max-width: 380px) {
+    .settings-header {
+      padding-left:10px !important;
+      padding-right:10px !important;
+    }
+
+    .settings-header p {
+      display:none;
+    }
+
+    .settings-header-actions {
+      grid-template-columns:minmax(0,1fr) 82px !important;
+    }
+
+    #settingsCloseBtn {
+      min-width:82px !important;
+      padding-left:12px !important;
+      padding-right:12px !important;
+    }
+
+    .settings-tab {
+      flex-basis:84px !important;
+      width:84px !important;
+    }
+
+    .settings-zone {
+      padding-left:8px !important;
+      padding-right:8px !important;
+    }
+
+    .settings-zone .control-group {
+      padding:10px !important;
+    }
+  }
+</style>
+
+
+<style id="mobile-responsive-layout-correction">
+  @media (max-width: 840px), (pointer: coarse) and (max-width: 1100px) {
+    #leftControls.toolbar-shell {
+      flex-wrap:nowrap !important;
+      flex-direction:column !important;
+      align-items:stretch !important;
+      justify-content:flex-start !important;
+      align-content:stretch !important;
+      gap:0 !important;
+    }
+
+    .settings-grid,
+    .settings-grid.single-view {
+      flex-basis:0 !important;
+    }
+
+    body.control-center-open #hoverZone {
+      opacity:0 !important;
+      visibility:hidden !important;
+      pointer-events:none !important;
+    }
+
+    #startupFeatures {
+      padding-bottom:76px;
+    }
+  }
+</style>
+
+
+<style id="mobile-responsive-grid-row-correction">
+  @media (max-width: 840px), (pointer: coarse) and (max-width: 1100px) {
+    .settings-grid,
+    .settings-grid.single-view {
+      grid-template-rows:none !important;
+      grid-auto-rows:max-content !important;
+      align-items:start !important;
+      align-content:start !important;
+    }
+
+    .settings-grid > .settings-zone {
+      height:auto !important;
+      min-height:0 !important;
+      overflow:visible !important;
+      padding:0 12px 12px !important;
+    }
+  }
+</style>
+
+
+<style id="mobile-settings-scroll-focus-fix">
+  @media (max-width: 840px), (pointer: coarse) and (max-width: 1100px) {
+    .settings-grid:focus,
+    .settings-grid:focus-visible {
+      outline:none !important;
+    }
+  }
+</style>
+
+<script id="complete-mobile-responsive-script">
+(() => {
+  const mobileQuery = window.matchMedia("(max-width: 840px), (pointer: coarse) and (max-width: 1100px)");
+  const topBar = document.getElementById("topBar");
+  const settingsGrid = document.querySelector(".settings-grid");
+  const closeButton = document.getElementById("settingsCloseBtn");
+
+  function updateMobileViewportHeight() {
+    const height = window.visualViewport?.height || window.innerHeight;
+    document.documentElement.style.setProperty("--mobile-app-height", `${Math.round(height)}px`);
+  }
+
+  function syncMobileState() {
+    document.body.classList.toggle("mobile-ui", mobileQuery.matches);
+    if (closeButton) closeButton.textContent = mobileQuery.matches ? "Done" : "Close";
+    updateMobileViewportHeight();
+  }
+
+  function syncControlCenterState() {
+    const open = !!topBar?.classList.contains("show");
+    document.body.classList.toggle("control-center-open", open);
+
+  }
+
+  syncMobileState();
+  syncControlCenterState();
+
+  mobileQuery.addEventListener?.("change", syncMobileState);
+  window.addEventListener("resize", updateMobileViewportHeight, { passive:true });
+  window.addEventListener("orientationchange", () => setTimeout(updateMobileViewportHeight, 120), { passive:true });
+  window.visualViewport?.addEventListener("resize", updateMobileViewportHeight, { passive:true });
+
+  if (topBar) {
+    new MutationObserver(syncControlCenterState).observe(topBar, {
+      attributes:true,
+      attributeFilter:["class"]
+    });
+  }
+
+  /* Start each chosen mobile category at its beginning instead of preserving
+     a deep scroll position from another section. */
+  document.querySelectorAll("[data-settings-view]").forEach(control => {
+    control.addEventListener("click", () => {
+      if (!mobileQuery.matches || !settingsGrid) return;
+      requestAnimationFrame(() => settingsGrid.scrollTo({ top:0, behavior:"smooth" }));
+    });
+  });
+
+  /* Keep a horizontally selected multi-layout page fully aligned after rotation. */
+  function alignNearestMobileLayout() {
+    const multi = document.getElementById("multiGallery");
+    if (!mobileQuery.matches || !multi || multi.style.display === "none") return;
+    const page = Math.round(multi.scrollLeft / Math.max(1, multi.clientWidth));
+    multi.scrollTo({ left:page * multi.clientWidth, behavior:"auto" });
+  }
+
+  window.addEventListener("orientationchange", () => setTimeout(alignNearestMobileLayout, 220), { passive:true });
+})();
+</script>
+
+
+<style id="dynamic-browser-zoom-responsive-layout">
+  /*
+    Browser-zoom responsiveness
+    ---------------------------
+    Browser zoom changes the available CSS viewport. These variables and
+    body classes are updated continuously by the script below, so the whole
+    interface reflows immediately without reloading the page.
+  */
+  :root {
+    --responsive-viewport-width: 100vw;
+    --responsive-viewport-height: 100dvh;
+  }
+
+  #topBar {
+    max-width:var(--responsive-viewport-width) !important;
+  }
+
+  #leftControls.toolbar-shell {
+    width:min(1760px, calc(var(--responsive-viewport-width) - 20px)) !important;
+    max-width:calc(var(--responsive-viewport-width) - 20px) !important;
+    max-height:calc(var(--responsive-viewport-height) - 58px) !important;
+    overflow:auto !important;
+    overscroll-behavior:contain;
+  }
+
+  #startupScreen {
+    width:var(--responsive-viewport-width) !important;
+    min-height:var(--responsive-viewport-height) !important;
+    max-height:var(--responsive-viewport-height) !important;
+    overflow:auto !important;
+  }
+
+  #startupFeatureList {
+    grid-template-columns:repeat(auto-fit, minmax(min(100%, 220px), 1fr)) !important;
+  }
+
+  .add-layout-dropdown,
+  .settings-view-menu {
+    max-width:calc(var(--responsive-viewport-width) - 24px) !important;
+    max-height:calc(var(--responsive-viewport-height) - 90px) !important;
+    overflow:auto !important;
+  }
+
+  /*
+    Wide zoom density:
+    keep the normal four-column dashboard.
+  */
+  body:not(.mobile-ui).zoom-layout-wide .settings-grid:not(.single-view) {
+    grid-template-columns:
+      minmax(250px,1.02fr)
+      minmax(285px,1.18fr)
+      minmax(350px,1.55fr)
+      minmax(230px,.95fr) !important;
+  }
+
+  /*
+    Compact zoom density:
+    activated as browser zoom reduces the available viewport. The dashboard
+    reflows to two columns and compresses spacing instead of clipping.
+  */
+  body:not(.mobile-ui).zoom-layout-compact #leftControls.toolbar-shell {
+    padding:12px !important;
+    border-radius:18px !important;
+  }
+
+  body:not(.mobile-ui).zoom-layout-compact .settings-header {
+    padding:2px 4px 10px !important;
+    margin-bottom:10px !important;
+  }
+
+  body:not(.mobile-ui).zoom-layout-compact .settings-header h1 {
+    font-size:21px !important;
+  }
+
+  body:not(.mobile-ui).zoom-layout-compact .settings-header p {
+    font-size:10px !important;
+  }
+
+  body:not(.mobile-ui).zoom-layout-compact .settings-grid:not(.single-view) {
+    grid-template-columns:repeat(2, minmax(0,1fr)) !important;
+    gap:9px !important;
+  }
+
+  body:not(.mobile-ui).zoom-layout-compact .settings-zone {
+    padding:9px !important;
+    gap:7px !important;
+  }
+
+  body:not(.mobile-ui).zoom-layout-compact .settings-zone .control-group {
+    padding:9px !important;
+    gap:7px !important;
+  }
+
+  body:not(.mobile-ui).zoom-layout-compact button,
+  body:not(.mobile-ui).zoom-layout-compact select,
+  body:not(.mobile-ui).zoom-layout-compact .file-button,
+  body:not(.mobile-ui).zoom-layout-compact input[type=number] {
+    min-height:32px !important;
+    height:32px !important;
+    font-size:9.5px !important;
+  }
+
+  /*
+    Tight zoom density:
+    for strong browser zoom or a narrow desktop window. The settings panel
+    becomes one fluid column and remains fully scrollable.
+  */
+  body:not(.mobile-ui).zoom-layout-tight #topBar {
+    top:40px !important;
+    left:6px !important;
+    right:6px !important;
+  }
+
+  body:not(.mobile-ui).zoom-layout-tight #hoverZone {
+    top:6px !important;
+    width:138px !important;
+    height:28px !important;
+  }
+
+  body:not(.mobile-ui).zoom-layout-tight #leftControls.toolbar-shell {
+    width:calc(var(--responsive-viewport-width) - 12px) !important;
+    max-width:calc(var(--responsive-viewport-width) - 12px) !important;
+    max-height:calc(var(--responsive-viewport-height) - 46px) !important;
+    padding:10px !important;
+    border-radius:16px !important;
+  }
+
+  body:not(.mobile-ui).zoom-layout-tight .settings-header {
+    position:sticky !important;
+    top:-10px !important;
+    z-index:80 !important;
+    padding:10px 4px !important;
+    margin-bottom:8px !important;
+    background:rgba(0,0,0,.96) !important;
+    backdrop-filter:blur(18px) saturate(1.35);
+    -webkit-backdrop-filter:blur(18px) saturate(1.35);
+  }
+
+  body:not(.mobile-ui).zoom-layout-tight .settings-header h1 {
+    font-size:19px !important;
+  }
+
+  body:not(.mobile-ui).zoom-layout-tight .settings-header p,
+  body:not(.mobile-ui).zoom-layout-tight .settings-eyebrow {
+    font-size:9px !important;
+  }
+
+  body:not(.mobile-ui).zoom-layout-tight .settings-header-actions {
+    gap:6px !important;
+  }
+
+  body:not(.mobile-ui).zoom-layout-tight .settings-header-action,
+  body:not(.mobile-ui).zoom-layout-tight #settingsCloseBtn {
+    min-height:34px !important;
+    height:34px !important;
+    padding:0 10px !important;
+    font-size:10px !important;
+  }
+
+  body:not(.mobile-ui).zoom-layout-tight .settings-tabs {
+    position:sticky !important;
+    top:72px !important;
+    z-index:70 !important;
+    display:flex !important;
+    grid-template-columns:none !important;
+    overflow-x:auto !important;
+    overflow-y:hidden !important;
+    scrollbar-width:none;
+    background:#000 !important;
+  }
+
+  body:not(.mobile-ui).zoom-layout-tight .settings-tabs::-webkit-scrollbar {
+    display:none;
+  }
+
+  body:not(.mobile-ui).zoom-layout-tight .settings-tab {
+    flex:0 0 98px !important;
+    min-width:98px !important;
+  }
+
+  body:not(.mobile-ui).zoom-layout-tight .settings-grid,
+  body:not(.mobile-ui).zoom-layout-tight .settings-grid:not(.single-view) {
+    grid-template-columns:minmax(0,1fr) !important;
+    gap:8px !important;
+  }
+
+  body:not(.mobile-ui).zoom-layout-tight .settings-zone,
+  body:not(.mobile-ui).zoom-layout-tight .settings-grid.single-view .settings-zone {
+    width:100% !important;
+    min-width:0 !important;
+    grid-column:1 !important;
+    padding:8px !important;
+  }
+
+  body:not(.mobile-ui).zoom-layout-tight .settings-zone .control-group {
+    width:100% !important;
+    min-width:0 !important;
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    padding:9px !important;
+    gap:7px !important;
+  }
+
+  body:not(.mobile-ui).zoom-layout-tight .settings-zone .timing-group {
+    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  }
+
+  body:not(.mobile-ui).zoom-layout-tight .settings-zone .start-group {
+    grid-template-columns:minmax(0,1fr) !important;
+  }
+
+  /*
+    Ultra-tight zoom density:
+    at very strong zoom, every control becomes a single-column row. This
+    prevents buttons, selects and labels from overlapping.
+  */
+  body:not(.mobile-ui).zoom-layout-ultra-tight .settings-zone .control-group,
+  body:not(.mobile-ui).zoom-layout-ultra-tight .settings-zone .timing-group,
+  body:not(.mobile-ui).zoom-layout-ultra-tight .settings-zone .scroll-group,
+  body:not(.mobile-ui).zoom-layout-ultra-tight .settings-zone .appearance-group {
+    grid-template-columns:minmax(0,1fr) !important;
+  }
+
+  body:not(.mobile-ui).zoom-layout-ultra-tight .settings-zone .control-group > *,
+  body:not(.mobile-ui).zoom-layout-ultra-tight .field-span-all,
+  body:not(.mobile-ui).zoom-layout-ultra-tight .field-span-2 {
+    grid-column:1 !important;
+  }
+
+  body:not(.mobile-ui).zoom-layout-ultra-tight .settings-header {
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) !important;
+    gap:8px !important;
+  }
+
+  body:not(.mobile-ui).zoom-layout-ultra-tight .settings-header-actions {
+    width:100% !important;
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) auto !important;
+  }
+
+  /*
+    Zoom-aware media overlay controls. They wrap or scroll instead of leaving
+    the viewport when browser zoom makes the visible layout too narrow.
+  */
+  body:not(.mobile-ui).zoom-layout-tight .layout-controls-group {
+    max-width:calc(100% - 20px) !important;
+  }
+
+  body:not(.mobile-ui).zoom-layout-tight .layout-controls-group > button {
+    min-width:40px !important;
+  }
+
+  body:not(.mobile-ui).zoom-layout-ultra-tight .layout-controls-group {
+    left:10px !important;
+    right:10px !important;
+    top:auto !important;
+    bottom:10px !important;
+    width:auto !important;
+    max-width:calc(100% - 20px) !important;
+    display:flex !important;
+    flex-direction:row !important;
+    flex-wrap:nowrap !important;
+    gap:6px !important;
+    overflow-x:auto !important;
+    overflow-y:hidden !important;
+    padding:6px !important;
+    border-radius:999px !important;
+    scrollbar-width:none;
+  }
+
+  body:not(.mobile-ui).zoom-layout-ultra-tight .layout-controls-group::-webkit-scrollbar {
+    display:none;
+  }
+
+  body:not(.mobile-ui).zoom-layout-ultra-tight .layout-controls-group > button {
+    position:relative !important;
+    inset:auto !important;
+    flex:0 0 auto !important;
+    transform:none !important;
+  }
+
+  body:not(.mobile-ui).zoom-layout-ultra-tight .media-info-overlay {
+    left:10px !important;
+    right:10px !important;
+    bottom:76px !important;
+    max-width:calc(100% - 20px) !important;
+  }
+
+  /*
+    Height-sensitive mode: browser zoom can reduce available height even when
+    width is still large. This keeps the control center scrollable and reachable.
+  */
+  body.zoom-height-limited #leftControls.toolbar-shell {
+    overflow:auto !important;
+    overscroll-behavior:contain;
+  }
+
+  body.zoom-height-limited .settings-header {
+    margin-bottom:8px !important;
+  }
+
+  /*
+    Never animate a large geometry transition during browser zoom. Reflowing
+    instantly avoids jitter while Ctrl+/Ctrl- or the browser zoom menu is used.
+  */
+  body.browser-zoom-reflowing #leftControls.toolbar-shell,
+  body.browser-zoom-reflowing .settings-grid,
+  body.browser-zoom-reflowing .settings-zone,
+  body.browser-zoom-reflowing .control-group,
+  body.browser-zoom-reflowing #gallery,
+  body.browser-zoom-reflowing #multiGallery,
+  body.browser-zoom-reflowing .feed {
+    transition:none !important;
+  }
+</style>
+
+<script id="dynamic-browser-zoom-responsive-script">
+(() => {
+  const root = document.documentElement;
+  const body = document.body;
+  let frame = 0;
+  let settleTimer = 0;
+  let lastWidth = 0;
+  let lastHeight = 0;
+
+  const densityClasses = [
+    "zoom-layout-wide",
+    "zoom-layout-compact",
+    "zoom-layout-tight",
+    "zoom-layout-ultra-tight"
+  ];
+
+  function getViewportSize() {
+    /*
+      innerWidth/innerHeight react to desktop browser zoom.
+      visualViewport handles mobile pinch zoom and dynamic browser chrome.
+      Use the smaller value so controls never extend beyond the visible area.
+    */
+    const visualWidth = window.visualViewport?.width;
+    const visualHeight = window.visualViewport?.height;
+    const width = Math.max(280, Math.round(
+      Number.isFinite(visualWidth) ? Math.min(window.innerWidth, visualWidth) : window.innerWidth
+    ));
+    const height = Math.max(260, Math.round(
+      Number.isFinite(visualHeight) ? Math.min(window.innerHeight, visualHeight) : window.innerHeight
+    ));
+    return { width, height };
+  }
+
+  function classifyDensity(width, height) {
+    if (width <= 620 || height <= 460) return "zoom-layout-ultra-tight";
+    if (width <= 1040 || height <= 620) return "zoom-layout-tight";
+    if (width <= 1450 || height <= 780) return "zoom-layout-compact";
+    return "zoom-layout-wide";
+  }
+
+  function applyZoomResponsiveLayout() {
+    frame = 0;
+    const { width, height } = getViewportSize();
+
+    root.style.setProperty("--responsive-viewport-width", `${width}px`);
+    root.style.setProperty("--responsive-viewport-height", `${height}px`);
+    root.style.setProperty("--responsive-viewport-ratio", String(width / Math.max(1, height)));
+    root.style.setProperty("--responsive-device-pixel-ratio", String(window.devicePixelRatio || 1));
+    root.dataset.viewportWidth = String(width);
+    root.dataset.viewportHeight = String(height);
+
+    const density = classifyDensity(width, height);
+    densityClasses.forEach(name => body.classList.toggle(name, name === density));
+    body.classList.toggle("zoom-height-limited", height < 760);
+
+    const changed = width !== lastWidth || height !== lastHeight;
+    lastWidth = width;
+    lastHeight = height;
+
+    if (changed) {
+      body.classList.add("browser-zoom-reflowing");
+      clearTimeout(settleTimer);
+      settleTimer = setTimeout(() => {
+        body.classList.remove("browser-zoom-reflowing");
+
+        /*
+          Browser zoom can leave a horizontally snapped multi-layout between
+          pages. Re-align the nearest feed after the viewport has settled.
+        */
+        const multi = document.getElementById("multiGallery");
+        if (multi && getComputedStyle(multi).display !== "none" && body.classList.contains("mobile-ui")) {
+          const page = Math.round(multi.scrollLeft / Math.max(1, multi.clientWidth));
+          multi.scrollTo({ left: page * multi.clientWidth, behavior: "auto" });
+        }
+
+        /*
+          Refit visible media after zoom without restarting playback or changing
+          audio state. The existing fit function only updates geometry.
+        */
+        if (typeof updateAllVisibleMediaFit === "function") {
+          try { updateAllVisibleMediaFit(); } catch (_) {}
+        } else {
+          window.dispatchEvent(new CustomEvent("zoom-responsive-layout-settled"));
+        }
+      }, 140);
+    }
+  }
+
+  function requestZoomResponsiveLayout() {
+    if (frame) cancelAnimationFrame(frame);
+    frame = requestAnimationFrame(applyZoomResponsiveLayout);
+  }
+
+  applyZoomResponsiveLayout();
+
+  window.addEventListener("resize", requestZoomResponsiveLayout, { passive:true });
+  window.addEventListener("orientationchange", () => {
+    setTimeout(requestZoomResponsiveLayout, 80);
+    setTimeout(requestZoomResponsiveLayout, 240);
+  }, { passive:true });
+
+  window.visualViewport?.addEventListener("resize", requestZoomResponsiveLayout, { passive:true });
+  window.visualViewport?.addEventListener("scroll", requestZoomResponsiveLayout, { passive:true });
+
+  if (typeof ResizeObserver === "function") {
+    const observer = new ResizeObserver(requestZoomResponsiveLayout);
+    observer.observe(root);
+    observer.observe(body);
+  }
+
+  /*
+    devicePixelRatio changes when Chrome/Edge browser zoom changes. A resolution
+    media query listener catches zoom changes on browsers that do not emit a
+    normal resize event.
+  */
+  let resolutionQuery;
+  function watchResolution() {
+    resolutionQuery?.removeEventListener?.("change", handleResolutionChange);
+    resolutionQuery = window.matchMedia(`(resolution: ${window.devicePixelRatio || 1}dppx)`);
+    resolutionQuery.addEventListener?.("change", handleResolutionChange);
+  }
+
+  function handleResolutionChange() {
+    watchResolution();
+    requestZoomResponsiveLayout();
+  }
+
+  watchResolution();
+})();
+</script>
+
+
+<style id="multi-layout-dynamic-zoom-fix">
+  /*
+    Every added layout is now responsive to its own width, not only to the
+    overall browser viewport. This matters when two or more feeds share the
+    screen and browser zoom makes each individual feed much narrower.
+  */
+  body:not(.mobile-ui) #multiGallery {
+    width:var(--responsive-viewport-width, 100vw) !important;
+    max-width:var(--responsive-viewport-width, 100vw) !important;
+    height:var(--responsive-viewport-height, 100dvh) !important;
+  }
+
+  body:not(.mobile-ui) #multiGallery > .feed,
+  body:not(.mobile-ui) #multiGallery > .feed > .item {
+    height:var(--responsive-viewport-height, 100dvh) !important;
+    min-width:0 !important;
+  }
+
+  body:not(.mobile-ui) #multiGallery > .feed {
+    container-type:inline-size;
+    container-name:added-media-layout;
+  }
+
+  /*
+    Medium added layout: keep the controls at the top, but constrain the row to
+    the real feed width and allow horizontal scrolling instead of clipping.
+  */
+  body:not(.mobile-ui) .feed.layout-local-compact .layout-controls-group {
+    left:8px !important;
+    right:8px !important;
+    width:auto !important;
+    max-width:calc(100% - 16px) !important;
+    justify-content:flex-start !important;
+    overflow-x:auto !important;
+    overflow-y:hidden !important;
+    padding:5px !important;
+    border:1px solid rgba(255,255,255,.16);
+    border-radius:18px !important;
+    background:rgba(0,0,0,.66);
+    scrollbar-width:none;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  body:not(.mobile-ui) .feed.layout-local-compact .layout-controls-group::-webkit-scrollbar {
+    display:none;
+  }
+
+  body:not(.mobile-ui) .feed.layout-local-compact .layout-controls-group > button {
+    min-height:42px !important;
+    height:42px !important;
+  }
+
+  /*
+    Narrow added layout: move its entire toolbar to a bottom scrolling pill.
+    This is based on the feed's width, so each layout adapts independently.
+  */
+  body:not(.mobile-ui) .feed.layout-local-tight .layout-controls-group,
+  body:not(.mobile-ui) .feed.layout-local-ultra-tight .layout-controls-group {
+    top:auto !important;
+    left:8px !important;
+    right:8px !important;
+    bottom:8px !important;
+    width:auto !important;
+    max-width:calc(100% - 16px) !important;
+    display:flex !important;
+    flex-direction:row !important;
+    flex-wrap:nowrap !important;
+    align-items:center !important;
+    justify-content:flex-start !important;
+    gap:6px !important;
+    padding:5px !important;
+    overflow-x:auto !important;
+    overflow-y:hidden !important;
+    border:1px solid rgba(255,255,255,.18);
+    border-radius:999px !important;
+    background:rgba(0,0,0,.78);
+    box-shadow:0 8px 24px rgba(0,0,0,.42);
+    scrollbar-width:none;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  body:not(.mobile-ui) .feed.layout-local-tight .layout-controls-group::-webkit-scrollbar,
+  body:not(.mobile-ui) .feed.layout-local-ultra-tight .layout-controls-group::-webkit-scrollbar {
+    display:none;
+  }
+
+  body:not(.mobile-ui) .feed.layout-local-tight .layout-controls-group > button,
+  body:not(.mobile-ui) .feed.layout-local-ultra-tight .layout-controls-group > button {
+    position:relative !important;
+    inset:auto !important;
+    flex:0 0 auto !important;
+    transform:none !important;
+    min-height:40px !important;
+    height:40px !important;
+    border-radius:13px !important;
+  }
+
+  body:not(.mobile-ui) .feed.layout-local-tight .layout-controls-group > .layout-filter-button,
+  body:not(.mobile-ui) .feed.layout-local-tight .layout-controls-group > .layout-order-button {
+    width:auto !important;
+    min-width:92px !important;
+    padding:0 11px !important;
+    font-size:9px !important;
+  }
+
+  body:not(.mobile-ui) .feed.layout-local-ultra-tight .layout-controls-group > .layout-filter-button,
+  body:not(.mobile-ui) .feed.layout-local-ultra-tight .layout-controls-group > .layout-order-button {
+    width:auto !important;
+    min-width:78px !important;
+    padding:0 9px !important;
+    font-size:8px !important;
+  }
+
+  body:not(.mobile-ui) .feed.layout-local-tight .layout-controls-group > .layout-speed-button,
+  body:not(.mobile-ui) .feed.layout-local-tight .layout-controls-group > .media-lock-button,
+  body:not(.mobile-ui) .feed.layout-local-tight .layout-controls-group > .layout-close-button,
+  body:not(.mobile-ui) .feed.layout-local-ultra-tight .layout-controls-group > .layout-speed-button,
+  body:not(.mobile-ui) .feed.layout-local-ultra-tight .layout-controls-group > .media-lock-button,
+  body:not(.mobile-ui) .feed.layout-local-ultra-tight .layout-controls-group > .layout-close-button {
+    width:40px !important;
+    min-width:40px !important;
+    max-width:40px !important;
+    flex-basis:40px !important;
+  }
+
+  body:not(.mobile-ui) .feed.layout-local-tight .media-info-overlay,
+  body:not(.mobile-ui) .feed.layout-local-ultra-tight .media-info-overlay {
+    left:8px !important;
+    right:8px !important;
+    bottom:66px !important;
+    max-width:calc(100% - 16px) !important;
+    padding:7px 8px !important;
+    font-size:9px !important;
+  }
+
+  body:not(.mobile-ui) .feed.layout-local-tight .media-name,
+  body:not(.mobile-ui) .feed.layout-local-ultra-tight .media-name {
+    max-width:calc(100% - 20px) !important;
+    padding:7px 9px !important;
+    font-size:clamp(11px, 4cqi, 15px) !important;
+  }
+
+  body:not(.mobile-ui) .feed.layout-local-tight .media-fps-counter,
+  body:not(.mobile-ui) .feed.layout-local-ultra-tight .media-fps-counter {
+    top:8px !important;
+    left:8px !important;
+    min-width:52px !important;
+    padding:6px 7px !important;
+    font-size:10px !important;
+  }
+
+  body:not(.mobile-ui) .feed.layout-local-ultra-tight::before {
+    max-width:calc(100% - 16px) !important;
+    padding:6px 8px !important;
+    font-size:9px !important;
+  }
+
+  /*
+    Reflow feed widths instantly while browser zoom is changing. The normal
+    entrance, focus and manual-resize animations still work at other times.
+  */
+  body.multi-layout-zoom-reflowing #multiGallery > .feed {
+    transition:none !important;
+  }
+
+  /*
+    Focus and unfocus are intentional user animations. They must take priority
+    over the temporary "no transitions" rule used only for browser-zoom reflow.
+  */
+  body.multi-layout-zoom-reflowing #multiGallery.focus-layout-animating > .feed,
+  body.multi-layout-zoom-reflowing #multiGallery.focus-exiting > .feed {
+    transition:
+      flex-basis 220ms cubic-bezier(.22,.61,.36,1),
+      opacity .16s ease,
+      box-shadow .16s ease !important;
+  }
+</style>
+
+<script id="multi-layout-dynamic-zoom-script">
+(() => {
+  const multi = document.getElementById("multiGallery");
+  if (!multi) return;
+
+  const observedFeeds = new WeakSet();
+  let fitFrame = 0;
+  let settleTimer = 0;
+
+  function activeFeedsSafe() {
+    try {
+      if (typeof getActiveFeeds === "function") return getActiveFeeds().filter(Boolean);
+    } catch (_) {}
+
+    return Array.from(multi.querySelectorAll(":scope > .feed"))
+      .filter(feed => getComputedStyle(feed).display !== "none");
+  }
+
+  function classifyFeedWidth(feed) {
+    if (!feed) return;
+
+    const width = Math.max(0, feed.getBoundingClientRect().width);
+    const classes = [
+      "layout-local-wide",
+      "layout-local-compact",
+      "layout-local-tight",
+      "layout-local-ultra-tight"
+    ];
+
+    let selected = "layout-local-wide";
+    if (width < 280) selected = "layout-local-ultra-tight";
+    else if (width < 430) selected = "layout-local-tight";
+    else if (width < 650) selected = "layout-local-compact";
+
+    classes.forEach(name => feed.classList.toggle(name, name === selected));
+    feed.style.setProperty("--local-layout-width", `${Math.round(width)}px`);
+  }
+
+  function classifyAllFeeds() {
+    activeFeedsSafe().forEach(classifyFeedWidth);
+  }
+
+  function refitVisibleGeometryOnly() {
+    const currentFeeds = activeFeedsSafe();
+
+    try {
+      if (typeof refitAfterLayoutResize === "function") {
+        refitAfterLayoutResize(...currentFeeds);
+      } else {
+        currentFeeds.forEach(feed => {
+          feed.querySelectorAll(":scope > .item").forEach(item => {
+            const media = item.querySelector(":scope > .media-foreground");
+            if (media && typeof fitForegroundMedia === "function") {
+              try { fitForegroundMedia(media, item); } catch (_) {}
+            }
+          });
+        });
+      }
+    } catch (_) {}
+
+    classifyAllFeeds();
+  }
+
+  function scheduleGeometryFit() {
+    if (fitFrame) cancelAnimationFrame(fitFrame);
+    fitFrame = requestAnimationFrame(() => {
+      fitFrame = 0;
+      classifyAllFeeds();
+
+      clearTimeout(settleTimer);
+      settleTimer = setTimeout(refitVisibleGeometryOnly, 140);
+    });
+  }
+
+  const feedObserver = typeof ResizeObserver === "function"
+    ? new ResizeObserver(entries => {
+        entries.forEach(entry => classifyFeedWidth(entry.target));
+      })
+    : null;
+
+  function observeAllFeeds() {
+    multi.querySelectorAll(":scope > .feed").forEach(feed => {
+      if (observedFeeds.has(feed)) return;
+      observedFeeds.add(feed);
+      feedObserver?.observe(feed);
+      classifyFeedWidth(feed);
+    });
+  }
+
+  observeAllFeeds();
+
+  new MutationObserver(() => {
+    observeAllFeeds();
+    scheduleGeometryFit();
+  }).observe(multi, {
+    childList:true,
+    subtree:false
+  });
+
+  /*
+    Widths themselves are now responsive CSS calc() expressions managed by the
+    main player. Resize events only refit visual geometry after zoom settles;
+    they never rewrite layout widths or start an animation.
+  */
+  window.addEventListener("resize", scheduleGeometryFit, { passive:true });
+  window.visualViewport?.addEventListener("resize", scheduleGeometryFit, { passive:true });
+  window.addEventListener("orientationchange", () => {
+    setTimeout(scheduleGeometryFit, 90);
+    setTimeout(scheduleGeometryFit, 240);
+  }, { passive:true });
+
+  window.addEventListener("zoom-responsive-layout-settled", scheduleGeometryFit);
+
+  window.updateAllVisibleMediaFit = () => {
+    classifyAllFeeds();
+    refitVisibleGeometryOnly();
+  };
+})();
+</script>
+
+
+<style id="stable-multi-layout-zoom-neutralizer">
+  /*
+    Multi-layout widths now remain responsive CSS expressions during zoom.
+    No zoom-specific width transition or forced feed animation is necessary.
+  */
+  body.multi-layout-zoom-reflowing #multiGallery > .feed {
+    transition:inherit !important;
+  }
+</style>
+
+
+<style id="startup-screen-browser-zoom-visibility-fix">
+  /*
+    At strong desktop zoom, the CSS viewport can match the compact landscape
+    mobile query. That query sets #startupScreen to display:grid !important,
+    which previously overrode the ordinary .hidden rule and made the initial
+    folder screen reappear after media had already been loaded.
+  */
+  #startupScreen.hidden,
+  body.folder-loaded #startupScreen {
+    display:none !important;
+    visibility:hidden !important;
+    opacity:0 !important;
+    pointer-events:none !important;
+  }
+
+  /*
+    Keep the startup screen available only before the first folder is loaded,
+    regardless of browser zoom, viewport category or orientation.
+  */
+  body:not(.folder-loaded) #startupScreen:not(.hidden) {
+    visibility:visible;
+    opacity:1;
+    pointer-events:auto;
+  }
+</style>
+
+<script id="startup-screen-browser-zoom-state-guard">
+(() => {
+  const startupScreen = document.getElementById("startupScreen");
+  if (!startupScreen) return;
+
+  function enforceStartupVisibilityState() {
+    if (document.body.classList.contains("folder-loaded")) {
+      startupScreen.classList.add("hidden");
+      startupScreen.setAttribute("aria-hidden", "true");
+      return;
+    }
+
+    startupScreen.setAttribute(
+      "aria-hidden",
+      startupScreen.classList.contains("hidden") ? "true" : "false"
+    );
+  }
+
+  enforceStartupVisibilityState();
+
+  new MutationObserver(enforceStartupVisibilityState).observe(document.body, {
+    attributes:true,
+    attributeFilter:["class"]
+  });
+
+  /*
+    Browser zoom can activate different media queries without changing the
+    application state. Reassert the state after each viewport change, without
+    touching media playback or layout widths.
+  */
+  window.addEventListener("resize", enforceStartupVisibilityState, { passive:true });
+  window.visualViewport?.addEventListener(
+    "resize",
+    enforceStartupVisibilityState,
+    { passive:true }
+  );
+})();
+</script>
+
+
+<style id="desktop-multi-layout-controls-no-bar-fix">
+  /*
+    Keep every desktop layout toolbar in its original top-right position.
+
+    The previous per-layout width rules changed narrow layouts into a black,
+    left-aligned scrolling bar. That happened most often with four or more
+    layouts. Narrow desktop layouts now keep the same transparent floating
+    controls as the first layout and scale the complete row only when needed.
+  */
+  body:not(.mobile-ui) #multiGallery .feed .layout-controls-group,
+  body:not(.mobile-ui) #multiGallery .feed.layout-local-compact .layout-controls-group,
+  body:not(.mobile-ui) #multiGallery .feed.layout-local-tight .layout-controls-group,
+  body:not(.mobile-ui) #multiGallery .feed.layout-local-ultra-tight .layout-controls-group,
+  body:not(.mobile-ui).zoom-layout-ultra-tight #multiGallery .feed .layout-controls-group {
+    position:absolute !important;
+    top:calc((100% - var(--visible-media-height, 100%)) / 2 + 12px) !important;
+    right:calc((100% - var(--visible-media-width, 100%)) / 2 + 12px) !important;
+    bottom:auto !important;
+    left:auto !important;
+
+    display:flex !important;
+    flex-direction:row !important;
+    flex-wrap:nowrap !important;
+    align-items:center !important;
+    justify-content:flex-end !important;
+    gap:clamp(4px, 0.65vw, 10px) !important;
+
+    width:max-content !important;
+    min-width:0 !important;
+    max-width:none !important;
+    height:auto !important;
+    min-height:0 !important;
+
+    margin:0 !important;
+    padding:0 !important;
+    overflow:visible !important;
+
+    border:0 !important;
+    border-radius:0 !important;
+    background:transparent !important;
+    box-shadow:none !important;
+    backdrop-filter:none !important;
+    -webkit-backdrop-filter:none !important;
+
+    transform-origin:top right !important;
+    transform:scale(var(--layout-controls-responsive-scale, 1)) !important;
+    scrollbar-width:none !important;
+  }
+
+  body:not(.mobile-ui) #multiGallery .feed .layout-controls-group::-webkit-scrollbar {
+    display:none !important;
+  }
+
+  body:not(.mobile-ui) #multiGallery .feed .layout-controls-group > button,
+  body:not(.mobile-ui) #multiGallery .feed.layout-local-compact .layout-controls-group > button,
+  body:not(.mobile-ui) #multiGallery .feed.layout-local-tight .layout-controls-group > button,
+  body:not(.mobile-ui) #multiGallery .feed.layout-local-ultra-tight .layout-controls-group > button {
+    position:relative !important;
+    inset:auto !important;
+    flex:0 0 auto !important;
+    min-height:44px !important;
+    height:44px !important;
+    margin:0 !important;
+  }
+
+  body:not(.mobile-ui) #multiGallery .feed .layout-controls-group > .layout-filter-button,
+  body:not(.mobile-ui) #multiGallery .feed .layout-controls-group > .layout-order-button {
+    width:auto !important;
+    min-width:max-content !important;
+    padding-left:12px !important;
+    padding-right:12px !important;
+    font-size:10px !important;
+  }
+
+  body:not(.mobile-ui) #multiGallery .feed .layout-controls-group > .layout-speed-button,
+  body:not(.mobile-ui) #multiGallery .feed .layout-controls-group > .media-lock-button,
+  body:not(.mobile-ui) #multiGallery .feed .layout-controls-group > .layout-close-button {
+    width:44px !important;
+    min-width:44px !important;
+    max-width:44px !important;
+    flex-basis:44px !important;
+  }
+
+  /*
+    The information panel no longer needs to be pushed upward because there is
+    no bottom toolbar on narrow desktop layouts.
+  */
+  body:not(.mobile-ui) #multiGallery .feed.layout-local-tight .media-info-overlay,
+  body:not(.mobile-ui) #multiGallery .feed.layout-local-ultra-tight .media-info-overlay {
+    bottom:max(14px, min(72px, calc(var(--layout-radius) * .36))) !important;
+  }
+</style>
+
+<script id="desktop-multi-layout-controls-responsive-scale">
+(() => {
+  const multi = document.getElementById("multiGallery");
+  if (!multi) return;
+
+  let frame = 0;
+  const observedFeeds = new WeakSet();
+
+  function calculateScaleForFeed(feed) {
+    if (!feed || document.body.classList.contains("mobile-ui")) return;
+
+    const availableWidth = Math.max(1, feed.clientWidth - 20);
+    const groups = feed.querySelectorAll(":scope > .item > .layout-controls-group");
+
+    groups.forEach(group => {
+      /*
+        scrollWidth reports the complete unscaled button row. Resetting the
+        variable before measurement avoids compounding scale after every zoom.
+      */
+      group.style.setProperty("--layout-controls-responsive-scale", "1");
+
+      const naturalWidth = Math.max(
+        group.scrollWidth,
+        Array.from(group.children).reduce((total, child, index) => {
+          const width = child.getBoundingClientRect().width;
+          return total + width + (index ? 10 : 0);
+        }, 0)
+      );
+
+      if (!Number.isFinite(naturalWidth) || naturalWidth <= 0) return;
+
+      const scale = Math.min(1, Math.max(0.28, availableWidth / naturalWidth));
+      group.style.setProperty(
+        "--layout-controls-responsive-scale",
+        scale.toFixed(4)
+      );
+    });
+  }
+
+  function updateAllScales() {
+    frame = 0;
+    multi.querySelectorAll(":scope > .feed").forEach(calculateScaleForFeed);
+  }
+
+  function requestScaleUpdate() {
+    if (frame) cancelAnimationFrame(frame);
+    frame = requestAnimationFrame(updateAllScales);
+  }
+
+  const resizeObserver = typeof ResizeObserver === "function"
+    ? new ResizeObserver(entries => {
+        entries.forEach(entry => calculateScaleForFeed(entry.target));
+      })
+    : null;
+
+  function observeFeeds() {
+    multi.querySelectorAll(":scope > .feed").forEach(feed => {
+      if (observedFeeds.has(feed)) return;
+      observedFeeds.add(feed);
+      resizeObserver?.observe(feed);
+      calculateScaleForFeed(feed);
+    });
+  }
+
+  observeFeeds();
+
+  new MutationObserver(() => {
+    observeFeeds();
+    requestScaleUpdate();
+  }).observe(multi, {
+    childList:true,
+    subtree:true
+  });
+
+  window.addEventListener("resize", requestScaleUpdate, { passive:true });
+  window.visualViewport?.addEventListener("resize", requestScaleUpdate, { passive:true });
+  window.addEventListener("orientationchange", () => {
+    setTimeout(requestScaleUpdate, 100);
+    setTimeout(requestScaleUpdate, 260);
+  }, { passive:true });
+
+  window.addEventListener("zoom-responsive-layout-settled", requestScaleUpdate);
+
+  requestScaleUpdate();
+})();
+</script>
+
 </body>
 </html>
